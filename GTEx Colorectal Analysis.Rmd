@@ -1,0 +1,51 @@
+---
+title: "GTEx Colorectal Analysis Notebook"
+output: html_notebook
+---
+
+## **Loading libraries**
+
+```{r}
+library('tidyverse')
+library('tibble')
+library('msigdbr')
+library('ggplot2')
+library('TCGAbiolinks')
+library('RNAseqQC')
+library('DESeq2')
+library('ensembldb')
+library('purrr')
+library('magrittr')
+library('vsn')
+library('matrixStats')
+library('dplyr') 
+```
+
+## **Loading the GTEx annotations**
+
+```{r}
+sample.df <- read.delim("data/GTEx/GTEx_Analysis_v8_Annotations_SampleAttributesDS.txt", as.is=TRUE, header=TRUE, row.names=1)
+subject.df <- read.delim("data/GTEx/GTEx_Analysis_v8_Annotations_SubjectPhenotypesDS.txt", as.is=TRUE, header=TRUE, row.names=1)
+```
+
+```{r}
+head(subject.df)
+```
+
+```{r}
+head(sample.df)
+```
+
+```{r}
+rnaseq.sample.df <- sample.df[sample.df['SMAFRZE']=='RNASEQ', ]
+head(rnaseq.sample.df)
+```
+## **Filtering Colon samples**
+
+```{r}
+as.matrix(sort(table(rnaseq.sample.df['SMTSD']), decreasing = TRUE))
+```
+```{r}
+colon.sample.df <- rnaseq.sample.df %>% stats::filter("SMTSD" == "Colon - Sigmoid")
+colon.sample.df
+```
