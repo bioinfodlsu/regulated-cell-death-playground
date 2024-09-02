@@ -31,29 +31,42 @@ DATA_DIR <- "data/GTEx/"
 
 ## II. Loading the GTEx annotations
 
+- `GTEx_Analysis_v8_Annotations_SampleAttributesDS.txt` - A de-identified, open access version of the sample annotations available in dbGaP (database of genotypes and phenotypes)
+- `GTEx_Analysis_v8_Annotations_SubjectPhenotypesDS.txt` - A de-identified, open access version of the subject phenotypes available in dbGaP.	
+
 ```{r}
 sample.df <- read.delim(paste0(DATA_DIR, "GTEx_Analysis_v8_Annotations_SampleAttributesDS.txt"), as.is=TRUE, header=TRUE, row.names=1)
 subject.df <- read.delim(paste0(DATA_DIR, "GTEx_Analysis_v8_Annotations_SubjectPhenotypesDS.txt"), as.is=TRUE, header=TRUE, row.names=1)
 ```
 
+The `DTHHRDY` column refers to the 4-point Hardy scale: https://www.ncbi.nlm.nih.gov/projects/gap/cgi-bin/variable.cgi?study_id=phs000424.v4.p1&phv=169092
+
+Refer to the metadata files here for more information: https://gtexportal.org/home/downloads/adult-gtex/metadata
+
 ```{r}
 head(subject.df)
 ```
+Refer to the metadata files here for more information: https://gtexportal.org/home/downloads/adult-gtex/metadata
 
 ```{r}
 head(sample.df)
 ```
+
+Extract entries that pertain to transcriptomic (RNA) data.
 
 ```{r}
 rnaseq.sample.df <- sample.df[sample.df['SMAFRZE']=='RNASEQ', ]
 head(rnaseq.sample.df)
 ```
 
-## III. Filtering Colon samples
+## III. Filtering colon samples
+
+The `SMTSD` column refers to the tissue type (i.e., the area from which the sample was taken).
 
 ```{r}
 as.matrix(sort(table(rnaseq.sample.df['SMTSD']), decreasing = TRUE))
 ```
+We are only interested in those from the colorectal area.
 
 ```{r}
 colon.sample.df <- rnaseq.sample.df %>% dplyr::filter(SMTSD == "Colon - Sigmoid")
@@ -62,6 +75,8 @@ head(colon.sample.df)
 
 ## IV. Loading GTEx data
 
+`GTEx_Analysis_2017-06-05_v8_RNASeQCv1.1.9_gene_tpm.gct` contains the gene TPMs.
+
 ```{r}
 tpm.df <- read.delim(paste0(DATA_DIR, "GTEx_Analysis_2017-06-05_v8_RNASeQCv1.1.9_gene_tpm.gct"),
                      as.is=T, row.names=1, check.names=FALSE, skip=2)
@@ -69,11 +84,15 @@ gene.names.df <- tpm.df[, 'Description', drop=FALSE]
 tpm.df <- tpm.df[, !(names(tpm.df) %in% c('Description'))]
 {cat(paste("Number of genes in table: ", dim(tpm.df)[1]))}
 ```
+Perform some data preprocessing.
+
 ```{r}
 # Remove version number: https://www.rdocumentation.org/packages/grex/versions/1.9/topics/cleanid
 tpm.df$ensembl <- cleanid(rownames(tpm.df))
 head(tpm.df$ensembl)
 ```
+FADD is one of the key genes involved in necroptosis.
+
 ```{r}
 # Create a named vector to map names to IDs
 name_to_id <- setNames(rownames(gene.names.df), gene.names.df$Description)
@@ -82,8 +101,8 @@ name_to_id <- setNames(rownames(gene.names.df), gene.names.df$Description)
 id_to_name <- setNames(gene.names.df$Description, rownames(gene.names.df))
 
 # To retrieve the ID for 'FADD'
-#name_to_id[['FADD']]
-id_to_name[['ENSG00000168040.4']]
+print(name_to_id[['FADD']])
+print(id_to_name[['ENSG00000168040.4']])
 ```
 
 ## V. Loading RCD gene sets
@@ -151,7 +170,7 @@ ggplot(gene.expressions.necro, aes(y = tissue, x = rownames(gene.expressions.nec
     axis.text.x = element_text(size = 9, hjust = 1)
   ) +
   labs(
-    title = "Expression of Necroptosis-related regulators in GTEx Colon Tissues",
+    title = "Expression of necroptosis-related regulators in GTEx Colon Tissues",
     x = "Tissue",
     y = "GeneName",
     fill = "TPM"
