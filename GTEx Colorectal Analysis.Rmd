@@ -73,7 +73,7 @@ colon.sample.df <- rnaseq.sample.df %>% dplyr::filter(SMTSD == "Colon - Sigmoid"
 head(colon.sample.df)
 ```
 
-## IV. Loading GTEx data
+## IV. Loading TPM data from GTEx.
 
 `GTEx_Analysis_2017-06-05_v8_RNASeQCv1.1.9_gene_tpm.gct` contains the gene TPMs.
 
@@ -161,6 +161,8 @@ head(pyroptosis.genes)
 
 ## VI. Exploratory Data Analysis
 
+Select only the tissue samples (columns) from the colorectal area.
+
 ```{r}
 tpm.colon.df <- tpm.df %>% dplyr::select(c(ensembl, rownames(colon.sample.df)))
 tpm.colon.df
@@ -168,17 +170,17 @@ tpm.colon.df
 
 ### Necroptosis
 
+Get the TPM for the genes in the necroptosis gene set.
+
 ```{r}
 tpm.colon.necro.df <- tpm.colon.df %>% dplyr::filter(ensembl %in% necroptosis.genes$ensembl_gene)
-tpm.colon.necro.df
-
 tpm.colon.necro.df2 <- left_join(tpm.colon.necro.df, necroptosis.genes %>% dplyr::select(ensembl_gene, gene_symbol), by = c("ensembl"="ensembl_gene"))
 tpm.colon.necro.df$gene_symbol <- tpm.colon.necro.df2$gene_symbol
 tpm.colon.necro.df
-
-results.samples.necro <- tpm.colon.necro.df %>% dplyr::select(-c('ensembl', 'gene_symbol'))
-results.samples.necro
 ```
+
+Compute the median TPM per gene.
+
 ```{r}
 gene.expressions.necro <- data.frame (
   row.names = tpm.colon.necro.df$gene_symbol,
@@ -187,7 +189,8 @@ gene.expressions.necro <- data.frame (
 )
 gene.expressions.necro
 ```
-### Gene expression plot
+
+Plot the gene expression.
 
 ```{r}
 ggplot(gene.expressions.necro, aes(y = tissue, x = rownames(gene.expressions.necro), fill = tpm)) +
@@ -198,9 +201,9 @@ ggplot(gene.expressions.necro, aes(y = tissue, x = rownames(gene.expressions.nec
     axis.text.x = element_text(size = 9, hjust = 1)
   ) +
   labs(
-    title = "Expression of necroptosis-related regulators in GTEx Colon Tissues",
-    x = "Tissue",
-    y = "GeneName",
+    title = "Expression of necroptosis-related genes in GTEx colon tissues",
+    x = "Gene",
+    y = "Area",
     fill = "TPM"
   ) +
   geom_text(aes(label = tpm), vjust = 1)
