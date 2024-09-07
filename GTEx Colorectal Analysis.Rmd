@@ -109,13 +109,32 @@ print(id_to_name[['ENSG00000168040.4']])
 
 ### Necroptosis
 
+We obtain the gene set from the Human MSigDB Collections:  
+
+- `GOBP_NECROPTOTIC_SIGNALING_PATHWAY` refers to the necroptosis gene set (found via MSigDB's search functionality: https://www.gsea-msigdb.org/gsea/msigdb/human/search.jsp).  
+- The category and subcategory parameters were decided based on this gene set.  
+- `C5` consists of genes annotated by the same ontology term (https://www.gsea-msigdb.org/gsea/msigdb/).  
+- `GO:BP` refers to the "biological process" category in Gene Ontology.
+
+CAVEAT! `GOBP_NECROPTOTIC_SIGNALING_PATHWAY` contains only 8 genes.
+
 ```{r}
 necroptosis.genes <- msigdbr(species = "human", category = "C5", subcategory = "GO:BP")  %>%
-  dplyr::filter(gs_name == "GOBP_10_FORMYLTETRAHYDROFOLATE_METABOLIC_PROCESS")
+  dplyr::filter(gs_name == "GOBP_NECROPTOTIC_SIGNALING_PATHWAY")
 head(necroptosis.genes)
 ```
 
 ### Ferroptosis
+ 
+We obtain the gene set from the Human MSigDB Collections:
+
+- "WP_FERROPTOSIS" refers to the ferroptosis gene set (found via MSigDB's search functionality: https://www.gsea-msigdb.org/gsea/msigdb/human/search.jsp).
+- The category and subcategory parameters were decided based on this gene set.   
+- "C2" consists of the curated gene sets (https://www.gsea-msigdb.org/gsea/msigdb/).  
+- "CP:WIKIPATHWAYS" refers to the curated gene set from WikiPathways.
+
+Note that there is another ferroptosis gene set: `GOBP_FERROPTOSIS`. <br>
+However, it contains only 10 genes (for comparison, `WP_FERROPTOSIS` contains 64 genes).
 
 ```{r}
 ferroptosis.genes <- msigdbr(species = "human", category = "C2", subcategory = "CP:WIKIPATHWAYS")  %>%
@@ -124,6 +143,15 @@ head(ferroptosis.genes)
 ```
 
 ### Pyroptosis
+
+We obtain the gene set from the Human MSigDB Collections:
+
+- "REACTOME_PYROPTOSIS" refers to the pyroptosis gene set (found via MSigDB's search functionality: https://www.gsea-msigdb.org/gsea/msigdb/human/search.jsp).
+- The category and subcategory parameters were decided based on this gene set.
+- "C2" consists of the curated gene sets (https://www.gsea-msigdb.org/gsea/msigdb/).
+- "CP:REACTOME" refers to the curated gene set from Reactome.
+
+`REACTOME_PYROPTOSIS` contains 27 genes.
 
 ```{r}
 pyroptosis.genes <- msigdbr(species = "human", category = "C2", subcategory = "CP:REACTOME")  %>%
