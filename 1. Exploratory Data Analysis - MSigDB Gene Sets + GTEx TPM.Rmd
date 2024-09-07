@@ -1,0 +1,221 @@
+---
+title: "GTEx Colorectal Analysis Notebook"
+output: html_notebook
+---
+
+## I. Preliminaries
+
+### Loading libraries
+
+```{r}
+library('tidyverse')
+library('tibble')
+library('msigdbr')
+library('ggplot2')
+library('TCGAbiolinks')
+library('RNAseqQC')
+library('DESeq2')
+library('ensembldb')
+library('purrr')
+library('magrittr')
+library('vsn')
+library('matrixStats')
+library('dplyr') 
+library('grex')
+```
+
+### Constants
+```{r}
+DATA_DIR <- "data/GTEx/"
+```
+
+## II. Loading the GTEx annotations
+
+- `GTEx_Analysis_v8_Annotations_SampleAttributesDS.txt` - A de-identified, open access version of the sample annotations available in dbGaP (database of genotypes and phenotypes)
+- `GTEx_Analysis_v8_Annotations_SubjectPhenotypesDS.txt` - A de-identified, open access version of the subject phenotypes available in dbGaP.	
+
+Download these files by running:
+```
+wget https://storage.googleapis.com/adult-gtex/annotations/v8/metadata-files/GTEx_Analysis_v8_Annotations_SampleAttributesDS.txt
+wget https://storage.googleapis.com/adult-gtex/annotations/v8/metadata-files/GTEx_Analysis_v8_Annotations_SubjectPhenotypesDS.txt
+```
+
+```{r}
+sample.df <- read.delim(paste0(DATA_DIR, "GTEx_Analysis_v8_Annotations_SampleAttributesDS.txt"), as.is=TRUE, header=TRUE, row.names=1)
+subject.df <- read.delim(paste0(DATA_DIR, "GTEx_Analysis_v8_Annotations_SubjectPhenotypesDS.txt"), as.is=TRUE, header=TRUE, row.names=1)
+```
+
+The `DTHHRDY` column refers to the 4-point Hardy scale: https://www.ncbi.nlm.nih.gov/projects/gap/cgi-bin/variable.cgi?study_id=phs000424.v4.p1&phv=169092
+
+Refer to the metadata files here for more information: https://gtexportal.org/home/downloads/adult-gtex/metadata
+
+```{r}
+head(subject.df)
+```
+Refer to the metadata files here for more information: https://gtexportal.org/home/downloads/adult-gtex/metadata
+
+```{r}
+head(sample.df)
+```
+
+Extract entries that pertain to transcriptomic (RNA) data.
+
+```{r}
+rnaseq.sample.df <- sample.df[sample.df['SMAFRZE']=='RNASEQ', ]
+head(rnaseq.sample.df)
+```
+
+## III. Filtering colon samples
+
+The `SMTSD` column refers to the tissue type (i.e., the area from which the sample was taken).
+
+```{r}
+as.matrix(sort(table(rnaseq.sample.df['SMTSD']), decreasing = TRUE))
+```
+We are only interested in those from the colorectal area.
+
+```{r}
+colon.sample.df <- rnaseq.sample.df %>% dplyr::filter(SMTSD == "Colon - Sigmoid")
+head(colon.sample.df)
+```
+
+## IV. Loading TPM data from GTEx.
+
+`GTEx_Analysis_2017-06-05_v8_RNASeQCv1.1.9_gene_tpm.gct` contains the gene TPMs.
+
+Download this file by running:
+```
+wget https://storage.googleapis.com/adult-gtex/bulk-gex/v8/rna-seq/GTEx_Analysis_2017-06-05_v8_RNASeQCv1.1.9_gene_tpm.gct.gz
+```
+
+```{r}
+tpm.df <- read.delim(paste0(DATA_DIR, "GTEx_Analysis_2017-06-05_v8_RNASeQCv1.1.9_gene_tpm.gct"),
+                     as.is=T, row.names=1, check.names=FALSE, skip=2)
+gene.names.df <- tpm.df[, 'Description', drop=FALSE]
+tpm.df <- tpm.df[, !(names(tpm.df) %in% c('Description'))]
+{cat(paste("Number of genes in table: ", dim(tpm.df)[1]))}
+```
+Perform some data preprocessing.
+
+```{r}
+# Remove version number: https://www.rdocumentation.org/packages/grex/versions/1.9/topics/cleanid
+tpm.df$ensembl <- cleanid(rownames(tpm.df))
+head(tpm.df$ensembl)
+```
+FADD is one of the key genes involved in necroptosis.
+
+```{r}
+# Create a named vector to map names to IDs
+name_to_id <- setNames(rownames(gene.names.df), gene.names.df$Description)
+
+# Create a named vector to map IDs to names
+id_to_name <- setNames(gene.names.df$Description, rownames(gene.names.df))
+
+# To retrieve the ID for 'FADD'
+print(name_to_id[['FADD']])
+print(id_to_name[['ENSG00000168040.4']])
+```
+
+## V. Loading RCD gene sets
+
+### Necroptosis
+
+We obtain the gene set from the Human MSigDB Collections:  
+
+- `GOBP_NECROPTOTIC_SIGNALING_PATHWAY` refers to the necroptosis gene set (found via MSigDB's search functionality: https://www.gsea-msigdb.org/gsea/msigdb/human/search.jsp).  
+- The category and subcategory parameters were decided based on this gene set.  
+- `C5` consists of genes annotated by the same ontology term (https://www.gsea-msigdb.org/gsea/msigdb/).  
+- `GO:BP` refers to the "biological process" category in Gene Ontology.
+
+CAVEAT! `GOBP_NECROPTOTIC_SIGNALING_PATHWAY` contains only 8 genes.
+
+```{r}
+necroptosis.genes <- msigdbr(species = "human", category = "C5", subcategory = "GO:BP")  %>%
+  dplyr::filter(gs_name == "GOBP_NECROPTOTIC_SIGNALING_PATHWAY")
+head(necroptosis.genes)
+```
+
+### Ferroptosis
+ 
+We obtain the gene set from the Human MSigDB Collections:
+
+- `WP_FERROPTOSIS` refers to the ferroptosis gene set (found via MSigDB's search functionality: https://www.gsea-msigdb.org/gsea/msigdb/human/search.jsp).
+- The category and subcategory parameters were decided based on this gene set.   
+- `C2` consists of the curated gene sets (https://www.gsea-msigdb.org/gsea/msigdb/).  
+- `CP:WIKIPATHWAYS` refers to the curated gene set from WikiPathways.
+
+Note that there is another ferroptosis gene set: `GOBP_FERROPTOSIS`. <br>
+However, it contains only 10 genes (for comparison, `WP_FERROPTOSIS` contains 64 genes).
+
+```{r}
+ferroptosis.genes <- msigdbr(species = "human", category = "C2", subcategory = "CP:WIKIPATHWAYS")  %>%
+  dplyr::filter(gs_name == "WP_FERROPTOSIS")
+head(ferroptosis.genes)
+```
+
+### Pyroptosis
+
+We obtain the gene set from the Human MSigDB Collections:
+
+- `REACTOME_PYROPTOSIS` refers to the pyroptosis gene set (found via MSigDB's search functionality: https://www.gsea-msigdb.org/gsea/msigdb/human/search.jsp).
+- The category and subcategory parameters were decided based on this gene set.
+- `C2` consists of the curated gene sets (https://www.gsea-msigdb.org/gsea/msigdb/).
+- `CP:REACTOME` refers to the curated gene set from Reactome.
+
+`REACTOME_PYROPTOSIS` contains 27 genes.
+
+```{r}
+pyroptosis.genes <- msigdbr(species = "human", category = "C2", subcategory = "CP:REACTOME")  %>%
+  dplyr::filter(gs_name == "REACTOME_PYROPTOSIS")
+head(pyroptosis.genes)
+```
+
+## VI. Exploratory Data Analysis
+
+Select only the tissue samples (columns) from the colorectal area.
+
+```{r}
+tpm.colon.df <- tpm.df %>% dplyr::select(c(ensembl, rownames(colon.sample.df)))
+tpm.colon.df
+```
+
+### Necroptosis
+
+Get the TPM for the genes in the necroptosis gene set.
+
+```{r}
+tpm.colon.necro.df <- tpm.colon.df %>% dplyr::filter(ensembl %in% necroptosis.genes$ensembl_gene)
+tpm.colon.necro.df2 <- left_join(tpm.colon.necro.df, necroptosis.genes %>% dplyr::select(ensembl_gene, gene_symbol), by = c("ensembl"="ensembl_gene"))
+tpm.colon.necro.df$gene_symbol <- tpm.colon.necro.df2$gene_symbol
+tpm.colon.necro.df
+```
+
+Compute the median TPM per gene.
+
+```{r}
+gene.expressions.necro <- data.frame (
+  row.names = tpm.colon.necro.df$gene_symbol,
+  tissue = 'Colon',
+  tpm = matrixStats::rowMedians(as.matrix(tpm.colon.necro.df%>%dplyr::select(-c('ensembl', 'gene_symbol'))))
+)
+gene.expressions.necro
+```
+
+Plot the gene expression.
+
+```{r}
+ggplot(gene.expressions.necro, aes(y = tissue, x = rownames(gene.expressions.necro), fill = tpm)) +
+  geom_tile() +
+  scale_fill_gradient(low = "white", high = "red") +
+  theme_minimal() +
+  theme(
+    axis.text.x = element_text(size = 9, hjust = 1)
+  ) +
+  labs(
+    title = "Expression of necroptosis-related genes in GTEx colon tissues",
+    x = "Gene",
+    y = "Area",
+    fill = "TPM"
+  ) +
+  geom_text(aes(label = tpm), vjust = 1)
+```
