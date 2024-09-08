@@ -24,7 +24,7 @@ library('dplyr')
 library('grex')
 ```
 
-## II. Download the TCGA gene expression data 
+## II. Downloading the TCGA gene expression data 
 
 Download gene expression data from The Cancer Genome Atlas (TCGA):
 - `TCGA-COAD` refers to the biospecimen data for colon adenocarcinoma.
@@ -87,7 +87,36 @@ query_coad <- GDCquery(
   sample.type = c("Solid Tissue Normal", "Primary Tumor"),
   barcode = as.list(samples$sample.submitter_id)
 )
+```
+If this is your first time running this notebook (i.e., you have not yet downloaded the results of the query in the previous block), uncomment the code block below.
 
-GDCdownload(query_coad)
+```{r}
+# GDCdownload(query_coad)
 ```
 
+Running the code block above should generate and populate a directory named `GDCdata`.
+
+## III. Data preprocessing
+
+Display the RNA-seq count matrix.
+
+```{r}
+tcga_coad_data <- GDCprepare(query_coad, summarizedExperiment = TRUE)
+count_matrix <- assay(tcga_coad_data, 'unstranded')
+rownames(count_matrix) <- cleanid(rownames(count_matrix))
+head(count_matrix)
+```
+```{r}
+rownames(samples) <- samples$cases
+samples <- samples %>%
+  dplyr::select(case="cases.submitter_id", type="sample_type")
+samples$type <- str_replace(samples$type, "Solid Tissue Normal", "normal")
+samples$type <- str_replace(samples$type, "Primary Tumor", "tumor")
+```
+
+```{r}
+dds <- DESeqDataSetFromMatrix(countData = counts_matrix,
+                              colData = samples,
+                              design = ~ type)
+dds
+```
