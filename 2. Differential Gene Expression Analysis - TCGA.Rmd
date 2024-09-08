@@ -98,7 +98,7 @@ Running the code block above should generate and populate a directory named `GDC
 
 ## III. Data preprocessing
 
-Display the RNA-seq count matrix.
+Construct the RNA-seq count matrix.
 
 ```{r}
 tcga_coad_data <- GDCprepare(query_coad, summarizedExperiment = TRUE)
@@ -106,17 +106,31 @@ count_matrix <- assay(tcga_coad_data, 'unstranded')
 rownames(count_matrix) <- cleanid(rownames(count_matrix))
 head(count_matrix)
 ```
+Format the `samples` table so that it can be fed as input to DESeq.
+
+The row names of `samples` should correspond to the column names of `count_matrix`.
+
 ```{r}
 rownames(samples) <- samples$cases
 samples <- samples %>%
   dplyr::select(case="cases.submitter_id", type="sample_type")
 samples$type <- str_replace(samples$type, "Solid Tissue Normal", "normal")
 samples$type <- str_replace(samples$type, "Primary Tumor", "tumor")
+count_matrix <- count_matrix[, rownames(samples)]
 ```
 
+Construct the DESeq data set object.
+
 ```{r}
-dds <- DESeqDataSetFromMatrix(countData = counts_matrix,
+dds <- DESeqDataSetFromMatrix(countData = count_matrix,
                               colData = samples,
                               design = ~ type)
 dds
+```
+Display quality control (QC) plots.
+
+```{r}
+plot_total_counts(dds)
+plot_library_complexity(dds)
+plot_gene_detection(dds)
 ```
