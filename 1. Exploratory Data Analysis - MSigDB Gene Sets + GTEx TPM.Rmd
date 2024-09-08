@@ -1,5 +1,5 @@
 ---
-title: "GTEx Colorectal Analysis Notebook"
+title: "Exploratory Data Analysis - MSigDB Gene Sets + GTEx TPM"
 output: html_notebook
 ---
 

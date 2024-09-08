@@ -1,0 +1,93 @@
+---
+title: "Differential Gene Expression Analysis - TCGA"
+output: html_notebook
+---
+
+## I. Preliminaries
+
+### Loading libraries
+
+```{r}
+library('tidyverse')
+library('tibble')
+library('msigdbr')
+library('ggplot2')
+library('TCGAbiolinks')
+library('RNAseqQC')
+library('DESeq2')
+library('ensembldb')
+library('purrr')
+library('magrittr')
+library('vsn')
+library('matrixStats')
+library('dplyr') 
+library('grex')
+```
+
+## II. Download the TCGA gene expression data 
+
+Download gene expression data from The Cancer Genome Atlas (TCGA):
+- `TCGA-COAD` refers to the biospecimen data for colon adenocarcinoma.
+- `STAR - Counts` pertains to the raw counts.
+
+```{r}
+query_tumor <- GDCquery(
+  project = "TCGA-COAD",
+  data.category = "Transcriptome Profiling",
+  data.type = "Gene Expression Quantification",
+  experimental.strategy = "RNA-Seq",
+  workflow.type = "STAR - Counts",
+  access = "open",
+  sample.type = "Primary Tumor"
+)
+tumor <- getResults(query_tumor)
+tumor
+```
+
+```{r}
+query_normal <- GDCquery(
+  project = "TCGA-COAD",
+  data.category = "Transcriptome Profiling",
+  data.type = "Gene Expression Quantification",
+  experimental.strategy = "RNA-Seq",
+  workflow.type = "STAR - Counts",
+  access = "open",
+  sample.type = "Solid Tissue Normal"
+)
+normal <- getResults(query_normal)
+normal
+```
+Consider only samples with both normal and malignant tissues.
+
+```{r}
+submitter_ids <- inner_join(tumor, normal, by = "cases.submitter_id") %>%
+              dplyr::select(cases.submitter_id)
+tumor <- tumor %>%
+  dplyr::filter(cases.submitter_id %in% submitter_ids$cases.submitter_id)
+normal <- normal %>%
+  dplyr::filter(cases.submitter_id %in% submitter_ids$cases.submitter_id)
+
+samples <- rbind(tumor, normal)
+unique(samples$sample_type)
+samples
+```
+
+Download only samples with both normal and malignant tissues.
+
+To impose this filtering, we set the `barcode` argument of `GDCquery` to `samples$sample.submitter_id` (which was generated in the previous cell).
+
+```{r}
+query_coad <- GDCquery(
+  project = "TCGA-COAD",
+  data.category = "Transcriptome Profiling",
+  data.type = "Gene Expression Quantification",
+  experimental.strategy = "RNA-Seq",
+  workflow.type = "STAR - Counts",
+  access = "open",
+  sample.type = c("Solid Tissue Normal", "Primary Tumor"),
+  barcode = as.list(samples$sample.submitter_id)
+)
+
+GDCdownload(query_coad)
+```
+
