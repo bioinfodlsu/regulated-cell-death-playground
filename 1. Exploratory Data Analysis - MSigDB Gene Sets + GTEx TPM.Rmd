@@ -219,3 +219,84 @@ ggplot(gene.expressions.necro, aes(y = tissue, x = rownames(gene.expressions.nec
   ) +
   geom_text(aes(label = tpm), vjust = 1)
 ```
+**Sanity Check:** RIPK1 and necroptosis - https://www.nature.com/articles/s12276-022-00847-4
+
+### Ferroptosis
+
+Get the TPM for the genes in the ferroptosis gene set.
+
+```{r}
+tpm.colon.ferro.df <- tpm.colon.df %>% dplyr::filter(ensembl %in% ferroptosis.genes$ensembl_gene)
+tpm.colon.ferro.df2 <- left_join(tpm.colon.ferro.df, ferroptosis.genes %>% dplyr::select(ensembl_gene, gene_symbol), by = c("ensembl"="ensembl_gene"))
+tpm.colon.ferro.df$gene_symbol <- tpm.colon.ferro.df2$gene_symbol
+tpm.colon.ferro.df
+```
+Compute the median TPM per gene.
+
+```{r}
+gene.expressions.ferro <- data.frame (
+  row.names = tpm.colon.ferro.df$gene_symbol,
+  tissue = 'Colon',
+  tpm = matrixStats::rowMedians(as.matrix(tpm.colon.ferro.df %>% dplyr::select(-c('ensembl', 'gene_symbol'))))
+)
+gene.expressions.ferro
+```
+Plot the gene expression.
+
+```{r}
+ggplot(gene.expressions.ferro, aes(y = tissue, x = rownames(gene.expressions.ferro), fill = tpm)) +
+  geom_tile() +
+  scale_fill_gradient(low = "white", high = "red") +
+  theme_minimal() +
+  theme(
+    axis.text.x = element_text(size = 7, angle = 90, hjust = 1)
+  ) +
+  labs(
+    title = "Expression of ferroptosis-related genes in GTEx colon tissues",
+    x = "Gene",
+    y = "Area",
+    fill = "TPM"
+  )
+```
+**Sanity Check:** FTH1 and ferroptosis - https://www.nature.com/articles/s41420-022-00902-z
+
+### Pyroptosis
+
+Get the TPM for the genes in the pyroptosis gene set.
+
+```{r}
+tpm.colon.pyro.df <- tpm.colon.df %>% dplyr::filter(ensembl %in% pyroptosis.genes$ensembl_gene)
+tpm.colon.pyro.df2 <- left_join(tpm.colon.pyro.df, pyroptosis.genes %>% dplyr::select(ensembl_gene, gene_symbol), by = c("ensembl"="ensembl_gene"))
+tpm.colon.pyro.df$gene_symbol <- tpm.colon.pyro.df2$gene_symbol
+tpm.colon.pyro.df
+```
+
+Compute the median TPM per gene.
+
+```{r}
+gene.expressions.pyro <- data.frame (
+  row.names = tpm.colon.pyro.df$gene_symbol,
+  tissue = 'Colon',
+  tpm = matrixStats::rowMedians(as.matrix(tpm.colon.pyro.df %>% dplyr::select(-c('ensembl', 'gene_symbol'))))
+)
+gene.expressions.pyro
+```
+
+Plot the gene expression.
+
+```{r}
+ggplot(gene.expressions.pyro, aes(y = tissue, x = rownames(gene.expressions.pyro), fill = tpm)) +
+  geom_tile() +
+  scale_fill_gradient(low = "white", high = "red") +
+  theme_minimal() +
+  theme(
+    axis.text.x = element_text(size = 7, angle = 90, hjust = 1)
+  ) +
+  labs(
+    title = "Expression of pyroptosis-related genes in GTEx colon tissues",
+    x = "Gene",
+    y = "Area",
+    fill = "TPM"
+  )
+```
+**Sanity Check:** CHMP4B and pyroptosis - https://pubmed.ncbi.nlm.nih.gov/38823000/
