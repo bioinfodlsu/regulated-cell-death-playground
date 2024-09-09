@@ -102,14 +102,15 @@ Construct the RNA-seq count matrix.
 
 ```{r}
 tcga_coad_data <- GDCprepare(query_coad, summarizedExperiment = TRUE)
-```
-
-```{r}
 count_matrix <- assay(tcga_coad_data, 'unstranded')
+
+# Remove duplicate entries
 count_matrix_df <- data.frame(count_matrix)
 count_matrix_df <- count_matrix_df[!duplicated(count_matrix_df), ]
 count_matrix <- data.matrix(count_matrix_df)
 rownames(count_matrix) <- cleanid(rownames(count_matrix))
+count_matrix <- count_matrix[!(duplicated(rownames(count_matrix)) | duplicated(rownames(count_matrix), fromLast=TRUE)), ]
+
 head(count_matrix)
 ```
 Format the `samples` table so that it can be fed as input to DESeq.
@@ -132,6 +133,8 @@ count_matrix <- count_matrix[, rownames(samples)]
 all(colnames(count_matrix) == rownames(samples))
 ```
 
+## IV. Differential gene expression analysis
+
 Construct the `DESeqDataSet` object.
 
 ```{r}
@@ -147,7 +150,9 @@ plot_total_counts(dds)
 plot_library_complexity(dds)
 plot_gene_detection(dds)
 ```
+Transform the read counts.
 
+From https://chipster.csc.fi/manual/deseq2-transform.html: Note that you can use the resulting transformed values only for visualization and clustering, not for differential expression analysis which needs raw counts.
 
 ```{r}
 
