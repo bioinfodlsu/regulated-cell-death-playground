@@ -102,13 +102,17 @@ Construct the RNA-seq count matrix.
 
 ```{r}
 tcga_coad_data <- GDCprepare(query_coad, summarizedExperiment = TRUE)
+```
+
+```{r}
 count_matrix <- assay(tcga_coad_data, 'unstranded')
+count_matrix_df <- data.frame(count_matrix)
+count_matrix_df <- count_matrix_df[!duplicated(count_matrix_df), ]
+count_matrix <- data.matrix(count_matrix_df)
 rownames(count_matrix) <- cleanid(rownames(count_matrix))
 head(count_matrix)
 ```
 Format the `samples` table so that it can be fed as input to DESeq.
-
-The row names of `samples` should correspond to the column names of `count_matrix`.
 
 ```{r}
 rownames(samples) <- samples$cases
@@ -116,21 +120,35 @@ samples <- samples %>%
   dplyr::select(case="cases.submitter_id", type="sample_type")
 samples$type <- str_replace(samples$type, "Solid Tissue Normal", "normal")
 samples$type <- str_replace(samples$type, "Primary Tumor", "tumor")
-count_matrix <- count_matrix[, rownames(samples)]
 ```
 
-Construct the DESeq data set object.
+DESeq2 requires the row names of `samples` should be identical to the column names of `count_matrix`.
+
+```{r}
+colnames(count_matrix) <- gsub(x = colnames(count_matrix), pattern = "\\.", replacement = "-")  
+count_matrix <- count_matrix[, rownames(samples)]
+
+# Sanity check
+all(colnames(count_matrix) == rownames(samples))
+```
+
+Construct the `DESeqDataSet` object.
 
 ```{r}
 dds <- DESeqDataSetFromMatrix(countData = count_matrix,
                               colData = samples,
                               design = ~ type)
-dds
 ```
+
 Display quality control (QC) plots.
 
 ```{r}
 plot_total_counts(dds)
 plot_library_complexity(dds)
 plot_gene_detection(dds)
+```
+
+
+```{r}
+
 ```
