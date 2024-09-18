@@ -113,7 +113,7 @@ count_matrix <- count_matrix[!(duplicated(rownames(count_matrix)) | duplicated(r
 
 head(count_matrix)
 ```
-Format the `samples` table so that it can be fed as input to DESeq.
+Format the `samples` table so that it can be fed as input to DESeq2.
 
 ```{r}
 rownames(samples) <- samples$cases
