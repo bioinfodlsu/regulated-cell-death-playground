@@ -16,7 +16,10 @@ def get_mirna(mrna, mirdb, output):
         for line in f:
             line = line.strip().split("\t")
             if line[1] in mrna:
-                mirna = line[0]
+                # Convert to lowercase to match casing in TCGA
+                mirna = line[0].lower()
+
+                # Remove strand info
                 if mirna.endswith("-5p") or mirna.endswith("-3p"):
                     mirna = mirna[:-len("-5p")]
 
