@@ -213,7 +213,7 @@ plot_pca(vsd, PC_x = 1, PC_y = 2, shape_by = "type")
 
 Refer to `1. Exploratory Data Analysis - MSigDB Gene Sets + GTEx TPM.rmd` for more detailed documentation on obtaining the gene sets.
 
-#### Mapping miRNA to target mRNA
+#### Mapping miRNAs to target mRNAs
 
 We are going to refer to miRDB to for the miRNA-mRNA mapping: https://academic.oup.com/nar/article/48/D1/D127/5557729
 
@@ -230,6 +230,11 @@ Hence, we need to perform some preprocessing to convert the gene symbols to RefS
 ```{r}
 mart <- useMart(biomart = "ensembl", dataset = "hsapiens_gene_ensembl")
 ```
+
+Alternative miRNA-mRNA mapping tools/databases:
+
+- mirTarRnaSeq: https://bmcgenomics.biomedcentral.com/articles/10.1186/s12864-022-08558-w
+- multiMiR: https://academic.oup.com/nar/article/42/17/e133/2902504
 
 #### Necroptosis
 
