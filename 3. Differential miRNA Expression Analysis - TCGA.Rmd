@@ -164,6 +164,8 @@ Display quality control (QC) plots (refer to https://cran.r-project.org/web/pack
   
 - Gene detection
   - Number of detected genes for each sample
+  
+**CAVEAT:** There seem to be some outliers — but we defer handling them for now!
 
 ```{r}
 plot_total_counts(dds)
@@ -192,11 +194,11 @@ mean_sd_plot(vsd)
 
 Check the clustering of the samples. 
 
-If you encounter the error `Error in loadNamespace(x) : there is no package called 'ComplexHeatmap'`, run the following commands:
+If you encounter the error `Error in loadNamespace(x) : there is no package called 'ComplexHeatmap'`, uncomment and run the following code block:
 
-```
-install.packages("devtools", dependencies = TRUE)
-devtools::install_github("jokergoo/ComplexHeatmap")
+```{r}
+# install.packages("devtools", dependencies = TRUE)
+# devtools::install_github("jokergoo/ComplexHeatmap")
 ```
 
 ```{r, fig.width=10,fig.height=15}
@@ -266,7 +268,7 @@ if (file.exists(rcd_mrna_file)) {
   file.remove(rcd_mrna_file)
 }
 
-lapply(rcd_refseq.unique_ids, write, rcd_mrna_file, append = TRUE, ncolumns = 1)
+invisible(lapply(rcd_refseq.unique_ids, write, rcd_mrna_file, append = TRUE, ncolumns = 1))
 ```
 
 Run the following Python script to fetch the miRNAs targeting the mRNAs of interest:
@@ -327,7 +329,7 @@ deseq.bbl.data
 
 Plot the results.
 
-```{r}
+```{r, fig.width=10,fig.height=55}
 ggplot(deseq.bbl.data, aes(x = cancer_type, y = rownames(deseq.bbl.data), size = padj, fill = log2FoldChange)) +
   geom_point(alpha = 0.5, shape = 21, color = "black") +
   scale_size(trans = "reverse") +
@@ -335,7 +337,7 @@ ggplot(deseq.bbl.data, aes(x = cancer_type, y = rownames(deseq.bbl.data), size =
   theme_minimal() +
   theme(legend.position = "bottom") +
   theme(legend.position = "bottom") +
-  labs(size = "FDR", fill = "log2 FC", x = "Cancer type", y = "Gene")
+  labs(size = "FDR", fill = "log2 FC", x = "Cancer type", y = "miRNA")
 ```
 #### Ferroptosis
 
@@ -347,11 +349,47 @@ ferroptosis.genes <- msigdbr(species = "human", category = "C2", subcategory = "
 head(ferroptosis.genes)
 ```
 
+Get the gene symbols of the genes included in the ferroptosis gene set, and convert them to RefSeq IDs.
+
+```{r}
+rcd_gene_symbols <- ferroptosis.genes$gene_symbol
+rcd_refseq <- getBM(attributes = c("refseq_mrna", "hgnc_symbol"), filters = "hgnc_symbol", values = rcd_gene_symbols, mart = mart)
+head(rcd_refseq)
+```
+
+Write the RefSeq IDs of the mRNAs of interest to a file.
+
+```{r}
+rcd_mrna_file <- "temp/ferroptosis-genes-refseq.txt"
+rcd_refseq.unique_ids <- unique(unlist(rcd_refseq$refseq_mrna))
+rcd_refseq.unique_ids <- rcd_refseq.unique_ids[!sapply(rcd_refseq.unique_ids, identical, "")]
+
+# Regenerate the file every time
+if (file.exists(rcd_mrna_file)) {
+  file.remove(rcd_mrna_file)
+}
+
+invisible(lapply(rcd_refseq.unique_ids, write, rcd_mrna_file, append = TRUE, ncolumns = 1))
+```
+Run the following Python script to fetch the miRNAs targeting the mRNAs of interest:
+
+```
+python util/get-mirna.py --mrna-list temp/ferroptosis-genes-refseq.txt --output temp/ferroptosis-mirna.txt
+```
+
+Running this script should generate a file named `ferroptosis-mirna.txt` inside the `temp` directory.
+
+Fetch the miRNAs from the said file.
+
+```{r}
+ferroptosis.mirna <- read.table("temp/ferroptosis-mirna.txt")
+ferroptosis.mirna <- unique(unlist(ferroptosis.mirna$V1))
+```
+
 Filter the genes to include only those in the ferroptosis gene set.
 
 ```{r}
-rownames(ferroptosis.genes) <- ferroptosis.genes$ensembl_gene
-coad_ferroptosis <- count_matrix[rownames(count_matrix) %in% ferroptosis.genes$ensembl_gene, ]
+coad_ferroptosis <- count_matrix[rownames(count_matrix) %in% ferroptosis.mirna, ]
 coad_ferroptosis <- coad_ferroptosis[, rownames(samples)]
 
 # Check if all samples in the counts dataframe are in the samples dataframe
@@ -384,22 +422,24 @@ deseq.bbl.data <- data.frame(
   pvalue = deseq.results$pvalue,
   padj = deseq.results$padj,
   cancer_type = "Colon",
-  gene_symbol = ferroptosis.genes[rownames(deseq.results), "gene_symbol"]
+  accession = rownames(deseq.results)
 )
 deseq.bbl.data
 ```
+
 Plot the results.
 
-```{r, fig.width=10,fig.height=15}
-ggplot(deseq.bbl.data, aes(x = cancer_type, y = gene_symbol, size = padj, fill = log2FoldChange)) +
+```{r, fig.width=10,fig.height=55}
+ggplot(deseq.bbl.data, aes(x = cancer_type, y = rownames(deseq.bbl.data), size = padj, fill = log2FoldChange)) +
   geom_point(alpha = 0.5, shape = 21, color = "black") +
   scale_size(trans = "reverse") +
   scale_fill_gradient2(low = "blue", mid = "white", high = "red", limits = c(-1.5, 3)) +
   theme_minimal() +
   theme(legend.position = "bottom") +
   theme(legend.position = "bottom") +
-  labs(size = "FDR", fill = "log2 FC", x = "Cancer type", y = "Gene")
+  labs(size = "FDR", fill = "log2 FC", x = "Cancer type", y = "miRNA")
 ```
+
 #### Pyroptosis
 
 Fetch the pyroptosis gene set.
