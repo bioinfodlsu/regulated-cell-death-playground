@@ -329,7 +329,7 @@ deseq.bbl.data
 
 Plot the results.
 
-```{r, fig.width=10,fig.height=55}
+```{r, fig.width=10,fig.height=20}
 ggplot(deseq.bbl.data, aes(x = cancer_type, y = rownames(deseq.bbl.data), size = padj, fill = log2FoldChange)) +
   geom_point(alpha = 0.5, shape = 21, color = "black") +
   scale_size(trans = "reverse") +
