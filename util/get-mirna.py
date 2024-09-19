@@ -16,7 +16,11 @@ def get_mirna(mrna, mirdb, output):
         for line in f:
             line = line.strip().split("\t")
             if line[1] in mrna:
-                g.write(f"{line[0]}\t{line[1]}\n")
+                mirna = line[0]
+                if mirna.endswith("-5p") or mirna.endswith("-3p"):
+                    mirna = mirna[:-len("-5p")]
+
+                g.write(f"{mirna}\t{line[1]}\n")
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
