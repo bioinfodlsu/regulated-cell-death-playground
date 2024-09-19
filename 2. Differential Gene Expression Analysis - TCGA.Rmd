@@ -194,11 +194,11 @@ mean_sd_plot(vsd)
 
 Check the clustering of the samples. 
 
-If you encounter the error `Error in loadNamespace(x) : there is no package called 'ComplexHeatmap'`, run the following commands:
+If you encounter the error `Error in loadNamespace(x) : there is no package called 'ComplexHeatmap'`, uncomment and run the following code block:
 
-```
-install.packages("devtools", dependencies = TRUE)
-devtools::install_github("jokergoo/ComplexHeatmap")
+```{r}
+# install.packages("devtools", dependencies = TRUE)
+# devtools::install_github("jokergoo/ComplexHeatmap")
 ```
 
 ```{r, fig.width=10,fig.height=15}
