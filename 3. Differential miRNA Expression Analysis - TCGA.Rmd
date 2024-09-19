@@ -233,6 +233,10 @@ The first column of the dataset lists the miRNAs, while the second column lists 
 However, our gene sets list the mRNAs of interest (i.e., those involved in regulated cell death) using their gene symbols. <br>
 Hence, we need to perform some preprocessing to convert the gene symbols to RefSeq IDs.
 
+```{r}
+mart<- useMart(biomart = 'ensembl', dataset = 'hsapiens_gene_ensembl')
+```
+
 #### Necroptosis
 
 Fetch the necroptosis gene set.
@@ -247,8 +251,23 @@ Get the gene symbols of the genes included in the necroptosis gene set, and conv
 
 ```{r}
 rcd_gene_symbols <- necroptosis.genes$gene_symbol
-rcd_gene_symbols
-lapply(rcd_gene_symbols, write, "temp/necroptosis-gene-symbols.txt", append=TRUE, ncolumns=1)
+rcd_refseq <- getBM(attributes = c("refseq_mrna","hgnc_symbol"), filters="hgnc_symbol", values=rcd_gene_symbols, mart=mart)
+head(rcd_refseq)
+```
+
+Write the RefSeq IDs of the mRNAs of interest to a file.
+
+```{r}
+rcd_mrna_file <- "temp/necroptosis-genes-refseq.txt"
+rcd_refseq.unique_ids <- unique(unlist(rcd_refseq$refseq_mrna))
+rcd_refseq.unique_ids <- rcd_refseq.unique_ids[!sapply(rcd_refseq.unique_ids, identical, "")]
+
+# Regenerate the file every time
+if (file.exists(rcd_mrna_file)) {
+  file.remove(rcd_mrna_file)
+}
+
+lapply(rcd_refseq.unique_ids, write, rcd_mrna_file, append=TRUE, ncolumns=1)
 ```
 
 
