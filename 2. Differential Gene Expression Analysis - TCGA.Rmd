@@ -8,20 +8,20 @@ output: html_notebook
 ### Loading libraries
 
 ```{r}
-library('tidyverse')
-library('tibble')
-library('msigdbr')
-library('ggplot2')
-library('TCGAbiolinks')
-library('RNAseqQC')
-library('DESeq2')
-library('ensembldb')
-library('purrr')
-library('magrittr')
-library('vsn')
-library('matrixStats')
-library('dplyr') 
-library('grex')
+library("tidyverse")
+library("tibble")
+library("msigdbr")
+library("ggplot2")
+library("TCGAbiolinks")
+library("RNAseqQC")
+library("DESeq2")
+library("ensembldb")
+library("purrr")
+library("magrittr")
+library("vsn")
+library("matrixStats")
+library("dplyr")
+library("grex")
 ```
 
 ## II. Downloading the TCGA gene expression data 
@@ -61,7 +61,7 @@ Consider only samples with both normal and malignant tissues.
 
 ```{r}
 submitter_ids <- inner_join(tumor, normal, by = "cases.submitter_id") %>%
-              dplyr::select(cases.submitter_id)
+  dplyr::select(cases.submitter_id)
 tumor <- tumor %>%
   dplyr::filter(cases.submitter_id %in% submitter_ids$cases.submitter_id)
 normal <- normal %>%
@@ -102,14 +102,14 @@ Construct the RNA-seq count matrix.
 
 ```{r}
 tcga_coad_data <- GDCprepare(query_coad, summarizedExperiment = TRUE)
-count_matrix <- assay(tcga_coad_data, 'unstranded')
+count_matrix <- assay(tcga_coad_data, "unstranded")
 
 # Remove duplicate entries
 count_matrix_df <- data.frame(count_matrix)
 count_matrix_df <- count_matrix_df[!duplicated(count_matrix_df), ]
 count_matrix <- data.matrix(count_matrix_df)
 rownames(count_matrix) <- cleanid(rownames(count_matrix))
-count_matrix <- count_matrix[!(duplicated(rownames(count_matrix)) | duplicated(rownames(count_matrix), fromLast=TRUE)), ]
+count_matrix <- count_matrix[!(duplicated(rownames(count_matrix)) | duplicated(rownames(count_matrix), fromLast = TRUE)), ]
 
 head(count_matrix)
 ```
@@ -118,7 +118,7 @@ Format the `samples` table so that it can be fed as input to DESeq2.
 ```{r}
 rownames(samples) <- samples$cases
 samples <- samples %>%
-  dplyr::select(case="cases.submitter_id", type="sample_type")
+  dplyr::select(case = "cases.submitter_id", type = "sample_type")
 samples$type <- str_replace(samples$type, "Solid Tissue Normal", "normal")
 samples$type <- str_replace(samples$type, "Primary Tumor", "tumor")
 ```
@@ -126,7 +126,7 @@ samples$type <- str_replace(samples$type, "Primary Tumor", "tumor")
 DESeq2 requires the row names of `samples` should be identical to the column names of `count_matrix`.
 
 ```{r}
-colnames(count_matrix) <- gsub(x = colnames(count_matrix), pattern = "\\.", replacement = "-")  
+colnames(count_matrix) <- gsub(x = colnames(count_matrix), pattern = "\\.", replacement = "-")
 count_matrix <- count_matrix[, rownames(samples)]
 
 # Sanity check
@@ -144,9 +144,11 @@ References:
 Construct the `DESeqDataSet` object.
 
 ```{r}
-dds <- DESeqDataSetFromMatrix(countData = count_matrix,
-                              colData = samples,
-                              design = ~ type)
+dds <- DESeqDataSetFromMatrix(
+  countData = count_matrix,
+  colData = samples,
+  design = ~type
+)
 ```
 
 ### Quality Control
@@ -186,7 +188,7 @@ From https://chipster.csc.fi/manual/deseq2-transform.html: <br>
 You can use the resulting transformed values only for visualization and clustering, not for differential expression analysis which needs raw counts.
 
 ```{r}
-vsd <-vst(dds)
+vsd <- vst(dds)
 mean_sd_plot(vsd)
 ```
 
@@ -218,7 +220,7 @@ Refer to `1. Exploratory Data Analysis - MSigDB Gene Sets + GTEx TPM.rmd` for mo
 Fetch the necroptosis gene set.
 
 ```{r}
-necroptosis.genes <- msigdbr(species = "human", category = "C5", subcategory = "GO:BP")  %>%
+necroptosis.genes <- msigdbr(species = "human", category = "C5", subcategory = "GO:BP") %>%
   dplyr::filter(gs_name == "GOBP_NECROPTOTIC_SIGNALING_PATHWAY")
 head(necroptosis.genes)
 ```
@@ -236,9 +238,11 @@ all(colnames(coad_necroptosis) == rownames(samples))
 Perform differential gene expression analysis.
 
 ```{r}
-dds <- DESeqDataSetFromMatrix(countData = coad_necroptosis,
-                              colData = samples,
-                              design = ~ type)
+dds <- DESeqDataSetFromMatrix(
+  countData = coad_necroptosis,
+  colData = samples,
+  design = ~type
+)
 dds <- filter_genes(dds, min_count = 10)
 dds$type <- relevel(dds$type, ref = "normal")
 dds <- DESeq(dds)
@@ -258,8 +262,8 @@ deseq.bbl.data <- data.frame(
   stat = deseq.results$stat,
   pvalue = deseq.results$pvalue,
   padj = deseq.results$padj,
-  cancer_type = 'Colon',
-  gene_symbol = necroptosis.genes[rownames(deseq.results), 'gene_symbol']
+  cancer_type = "Colon",
+  gene_symbol = necroptosis.genes[rownames(deseq.results), "gene_symbol"]
 )
 deseq.bbl.data
 ```
@@ -267,21 +271,21 @@ deseq.bbl.data
 Plot the results.
 
 ```{r}
-ggplot(deseq.bbl.data, aes(x=cancer_type, y=gene_symbol, size=padj, fill=log2FoldChange)) +
-    geom_point(alpha=0.5, shape=21, color="black") +
-    scale_size(trans='reverse') +
-    scale_fill_gradient2(low = "blue", mid = "white", high = "red", limits = c(-1.5,3)) +
-    theme_minimal() +
-    theme(legend.position="bottom") +
-    theme(legend.position = "bottom")+
-    labs(size = "FDR", fill = "log2 FC", x = "Cancer type", y = "Gene")
+ggplot(deseq.bbl.data, aes(x = cancer_type, y = gene_symbol, size = padj, fill = log2FoldChange)) +
+  geom_point(alpha = 0.5, shape = 21, color = "black") +
+  scale_size(trans = "reverse") +
+  scale_fill_gradient2(low = "blue", mid = "white", high = "red", limits = c(-1.5, 3)) +
+  theme_minimal() +
+  theme(legend.position = "bottom") +
+  theme(legend.position = "bottom") +
+  labs(size = "FDR", fill = "log2 FC", x = "Cancer type", y = "Gene")
 ```
 #### Ferroptosis
 
 Fetch the ferroptosis gene set.
 
 ```{r}
-ferroptosis.genes <- msigdbr(species = "human", category = "C2", subcategory = "CP:WIKIPATHWAYS")  %>%
+ferroptosis.genes <- msigdbr(species = "human", category = "C2", subcategory = "CP:WIKIPATHWAYS") %>%
   dplyr::filter(gs_name == "WP_FERROPTOSIS")
 head(ferroptosis.genes)
 ```
@@ -299,9 +303,11 @@ all(colnames(coad_ferroptosis) == rownames(samples))
 Perform differential gene expression analysis.
 
 ```{r}
-dds <- DESeqDataSetFromMatrix(countData = coad_ferroptosis,
-                              colData = samples,
-                              design = ~ type)
+dds <- DESeqDataSetFromMatrix(
+  countData = coad_ferroptosis,
+  colData = samples,
+  design = ~type
+)
 dds <- filter_genes(dds, min_count = 10)
 dds$type <- relevel(dds$type, ref = "normal")
 dds <- DESeq(dds)
@@ -320,29 +326,29 @@ deseq.bbl.data <- data.frame(
   stat = deseq.results$stat,
   pvalue = deseq.results$pvalue,
   padj = deseq.results$padj,
-  cancer_type = 'Colon',
-  gene_symbol = ferroptosis.genes[rownames(deseq.results), 'gene_symbol']
+  cancer_type = "Colon",
+  gene_symbol = ferroptosis.genes[rownames(deseq.results), "gene_symbol"]
 )
 deseq.bbl.data
 ```
 Plot the results.
 
 ```{r, fig.width=10,fig.height=15}
-ggplot(deseq.bbl.data, aes(x=cancer_type, y=gene_symbol, size=padj, fill=log2FoldChange)) +
-    geom_point(alpha=0.5, shape=21, color="black") +
-    scale_size(trans='reverse') +
-    scale_fill_gradient2(low = "blue", mid = "white", high = "red", limits = c(-1.5,3)) +
-    theme_minimal() +
-    theme(legend.position="bottom") +
-    theme(legend.position = "bottom")+
-    labs(size = "FDR", fill = "log2 FC", x = "Cancer type", y = "Gene")
+ggplot(deseq.bbl.data, aes(x = cancer_type, y = gene_symbol, size = padj, fill = log2FoldChange)) +
+  geom_point(alpha = 0.5, shape = 21, color = "black") +
+  scale_size(trans = "reverse") +
+  scale_fill_gradient2(low = "blue", mid = "white", high = "red", limits = c(-1.5, 3)) +
+  theme_minimal() +
+  theme(legend.position = "bottom") +
+  theme(legend.position = "bottom") +
+  labs(size = "FDR", fill = "log2 FC", x = "Cancer type", y = "Gene")
 ```
 #### Pyroptosis
 
 Fetch the pyroptosis gene set.
 
 ```{r}
-pyroptosis.genes <- msigdbr(species = "human", category = "C2", subcategory = "CP:REACTOME")  %>%
+pyroptosis.genes <- msigdbr(species = "human", category = "C2", subcategory = "CP:REACTOME") %>%
   dplyr::filter(gs_name == "REACTOME_PYROPTOSIS")
 head(pyroptosis.genes)
 ```
@@ -361,9 +367,11 @@ all(colnames(coad_pyroptosis) == rownames(samples))
 Perform differential gene expression analysis.
 
 ```{r}
-dds <- DESeqDataSetFromMatrix(countData = coad_pyroptosis,
-                              colData = samples,
-                              design = ~ type)
+dds <- DESeqDataSetFromMatrix(
+  countData = coad_pyroptosis,
+  colData = samples,
+  design = ~type
+)
 dds <- filter_genes(dds, min_count = 10)
 dds$type <- relevel(dds$type, ref = "normal")
 dds <- DESeq(dds)
@@ -382,20 +390,20 @@ deseq.bbl.data <- data.frame(
   stat = deseq.results$stat,
   pvalue = deseq.results$pvalue,
   padj = deseq.results$padj,
-  cancer_type = 'Colon',
-  gene_symbol = pyroptosis.genes[rownames(deseq.results), 'gene_symbol']
+  cancer_type = "Colon",
+  gene_symbol = pyroptosis.genes[rownames(deseq.results), "gene_symbol"]
 )
 deseq.bbl.data
 ```
 Plot the results.
 
 ```{r, fig.width=10,fig.height=10}
-ggplot(deseq.bbl.data, aes(x=cancer_type, y=gene_symbol, size=padj, fill=log2FoldChange)) +
-    geom_point(alpha=0.5, shape=21, color="black") +
-    scale_size(trans='reverse') +
-    scale_fill_gradient2(low = "blue", mid = "white", high = "red", limits = c(-1.5,3)) +
-    theme_minimal() +
-    theme(legend.position="bottom") +
-    theme(legend.position = "bottom")+
-    labs(size = "FDR", fill = "log2 FC", x = "Cancer type", y = "Gene")
+ggplot(deseq.bbl.data, aes(x = cancer_type, y = gene_symbol, size = padj, fill = log2FoldChange)) +
+  geom_point(alpha = 0.5, shape = 21, color = "black") +
+  scale_size(trans = "reverse") +
+  scale_fill_gradient2(low = "blue", mid = "white", high = "red", limits = c(-1.5, 3)) +
+  theme_minimal() +
+  theme(legend.position = "bottom") +
+  theme(legend.position = "bottom") +
+  labs(size = "FDR", fill = "log2 FC", x = "Cancer type", y = "Gene")
 ```

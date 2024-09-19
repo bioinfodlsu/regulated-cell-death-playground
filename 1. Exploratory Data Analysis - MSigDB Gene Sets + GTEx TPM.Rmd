@@ -8,20 +8,20 @@ output: html_notebook
 ### Loading libraries
 
 ```{r}
-library('tidyverse')
-library('tibble')
-library('msigdbr')
-library('ggplot2')
-library('TCGAbiolinks')
-library('RNAseqQC')
-library('DESeq2')
-library('ensembldb')
-library('purrr')
-library('magrittr')
-library('vsn')
-library('matrixStats')
-library('dplyr') 
-library('grex')
+library("tidyverse")
+library("tibble")
+library("msigdbr")
+library("ggplot2")
+library("TCGAbiolinks")
+library("RNAseqQC")
+library("DESeq2")
+library("ensembldb")
+library("purrr")
+library("magrittr")
+library("vsn")
+library("matrixStats")
+library("dplyr")
+library("grex")
 ```
 
 ### Constants
@@ -41,8 +41,8 @@ wget https://storage.googleapis.com/adult-gtex/annotations/v8/metadata-files/GTE
 ```
 
 ```{r}
-sample.df <- read.delim(paste0(DATA_DIR, "GTEx_Analysis_v8_Annotations_SampleAttributesDS.txt"), as.is=TRUE, header=TRUE, row.names=1)
-subject.df <- read.delim(paste0(DATA_DIR, "GTEx_Analysis_v8_Annotations_SubjectPhenotypesDS.txt"), as.is=TRUE, header=TRUE, row.names=1)
+sample.df <- read.delim(paste0(DATA_DIR, "GTEx_Analysis_v8_Annotations_SampleAttributesDS.txt"), as.is = TRUE, header = TRUE, row.names = 1)
+subject.df <- read.delim(paste0(DATA_DIR, "GTEx_Analysis_v8_Annotations_SubjectPhenotypesDS.txt"), as.is = TRUE, header = TRUE, row.names = 1)
 ```
 
 The `DTHHRDY` column refers to the 4-point Hardy scale: https://www.ncbi.nlm.nih.gov/projects/gap/cgi-bin/variable.cgi?study_id=phs000424.v4.p1&phv=169092
@@ -61,7 +61,7 @@ head(sample.df)
 Extract entries that pertain to transcriptomic (RNA) data.
 
 ```{r}
-rnaseq.sample.df <- sample.df[sample.df['SMAFRZE']=='RNASEQ', ]
+rnaseq.sample.df <- sample.df[sample.df["SMAFRZE"] == "RNASEQ", ]
 head(rnaseq.sample.df)
 ```
 
@@ -70,7 +70,7 @@ head(rnaseq.sample.df)
 The `SMTSD` column refers to the tissue type (i.e., the area from which the sample was taken).
 
 ```{r}
-as.matrix(sort(table(rnaseq.sample.df['SMTSD']), decreasing = TRUE))
+as.matrix(sort(table(rnaseq.sample.df["SMTSD"]), decreasing = TRUE))
 ```
 We are only interested in those from the colorectal area.
 
@@ -90,10 +90,13 @@ wget https://storage.googleapis.com/adult-gtex/bulk-gex/v8/rna-seq/GTEx_Analysis
 
 ```{r}
 tpm.df <- read.delim(paste0(DATA_DIR, "GTEx_Analysis_2017-06-05_v8_RNASeQCv1.1.9_gene_tpm.gct"),
-                     as.is=T, row.names=1, check.names=FALSE, skip=2)
-gene.names.df <- tpm.df[, 'Description', drop=FALSE]
-tpm.df <- tpm.df[, !(names(tpm.df) %in% c('Description'))]
-{cat(paste("Number of genes in table: ", dim(tpm.df)[1]))}
+  as.is = T, row.names = 1, check.names = FALSE, skip = 2
+)
+gene.names.df <- tpm.df[, "Description", drop = FALSE]
+tpm.df <- tpm.df[, !(names(tpm.df) %in% c("Description"))]
+{
+  cat(paste("Number of genes in table: ", dim(tpm.df)[1]))
+}
 ```
 Perform some data preprocessing.
 
@@ -112,8 +115,8 @@ name_to_id <- setNames(rownames(gene.names.df), gene.names.df$Description)
 id_to_name <- setNames(gene.names.df$Description, rownames(gene.names.df))
 
 # To retrieve the ID for 'FADD'
-print(name_to_id[['FADD']])
-print(id_to_name[['ENSG00000168040.4']])
+print(name_to_id[["FADD"]])
+print(id_to_name[["ENSG00000168040.4"]])
 ```
 
 ## V. Loading RCD gene sets
@@ -130,7 +133,7 @@ We obtain the gene set from the Human MSigDB Collections:
 CAVEAT! `GOBP_NECROPTOTIC_SIGNALING_PATHWAY` contains only 8 genes.
 
 ```{r}
-necroptosis.genes <- msigdbr(species = "human", category = "C5", subcategory = "GO:BP")  %>%
+necroptosis.genes <- msigdbr(species = "human", category = "C5", subcategory = "GO:BP") %>%
   dplyr::filter(gs_name == "GOBP_NECROPTOTIC_SIGNALING_PATHWAY")
 head(necroptosis.genes)
 ```
@@ -148,7 +151,7 @@ Note that there is another ferroptosis gene set: `GOBP_FERROPTOSIS`. <br>
 However, it contains only 10 genes (for comparison, `WP_FERROPTOSIS` contains 64 genes).
 
 ```{r}
-ferroptosis.genes <- msigdbr(species = "human", category = "C2", subcategory = "CP:WIKIPATHWAYS")  %>%
+ferroptosis.genes <- msigdbr(species = "human", category = "C2", subcategory = "CP:WIKIPATHWAYS") %>%
   dplyr::filter(gs_name == "WP_FERROPTOSIS")
 head(ferroptosis.genes)
 ```
@@ -165,7 +168,7 @@ We obtain the gene set from the Human MSigDB Collections:
 `REACTOME_PYROPTOSIS` contains 27 genes.
 
 ```{r}
-pyroptosis.genes <- msigdbr(species = "human", category = "C2", subcategory = "CP:REACTOME")  %>%
+pyroptosis.genes <- msigdbr(species = "human", category = "C2", subcategory = "CP:REACTOME") %>%
   dplyr::filter(gs_name == "REACTOME_PYROPTOSIS")
 head(pyroptosis.genes)
 ```
@@ -185,7 +188,7 @@ Get the TPM for the genes in the necroptosis gene set.
 
 ```{r}
 tpm.colon.necro.df <- tpm.colon.df %>% dplyr::filter(ensembl %in% necroptosis.genes$ensembl_gene)
-tpm.colon.necro.df2 <- left_join(tpm.colon.necro.df, necroptosis.genes %>% dplyr::select(ensembl_gene, gene_symbol), by = c("ensembl"="ensembl_gene"))
+tpm.colon.necro.df2 <- left_join(tpm.colon.necro.df, necroptosis.genes %>% dplyr::select(ensembl_gene, gene_symbol), by = c("ensembl" = "ensembl_gene"))
 tpm.colon.necro.df$gene_symbol <- tpm.colon.necro.df2$gene_symbol
 tpm.colon.necro.df
 ```
@@ -193,10 +196,10 @@ tpm.colon.necro.df
 Compute the median TPM per gene.
 
 ```{r}
-gene.expressions.necro <- data.frame (
+gene.expressions.necro <- data.frame(
   row.names = tpm.colon.necro.df$gene_symbol,
-  tissue = 'Colon',
-  tpm = matrixStats::rowMedians(as.matrix(tpm.colon.necro.df%>%dplyr::select(-c('ensembl', 'gene_symbol'))))
+  tissue = "Colon",
+  tpm = matrixStats::rowMedians(as.matrix(tpm.colon.necro.df %>% dplyr::select(-c("ensembl", "gene_symbol"))))
 )
 gene.expressions.necro
 ```
@@ -227,17 +230,17 @@ Get the TPM for the genes in the ferroptosis gene set.
 
 ```{r}
 tpm.colon.ferro.df <- tpm.colon.df %>% dplyr::filter(ensembl %in% ferroptosis.genes$ensembl_gene)
-tpm.colon.ferro.df2 <- left_join(tpm.colon.ferro.df, ferroptosis.genes %>% dplyr::select(ensembl_gene, gene_symbol), by = c("ensembl"="ensembl_gene"))
+tpm.colon.ferro.df2 <- left_join(tpm.colon.ferro.df, ferroptosis.genes %>% dplyr::select(ensembl_gene, gene_symbol), by = c("ensembl" = "ensembl_gene"))
 tpm.colon.ferro.df$gene_symbol <- tpm.colon.ferro.df2$gene_symbol
 tpm.colon.ferro.df
 ```
 Compute the median TPM per gene.
 
 ```{r}
-gene.expressions.ferro <- data.frame (
+gene.expressions.ferro <- data.frame(
   row.names = tpm.colon.ferro.df$gene_symbol,
-  tissue = 'Colon',
-  tpm = matrixStats::rowMedians(as.matrix(tpm.colon.ferro.df %>% dplyr::select(-c('ensembl', 'gene_symbol'))))
+  tissue = "Colon",
+  tpm = matrixStats::rowMedians(as.matrix(tpm.colon.ferro.df %>% dplyr::select(-c("ensembl", "gene_symbol"))))
 )
 gene.expressions.ferro
 ```
@@ -266,7 +269,7 @@ Get the TPM for the genes in the pyroptosis gene set.
 
 ```{r}
 tpm.colon.pyro.df <- tpm.colon.df %>% dplyr::filter(ensembl %in% pyroptosis.genes$ensembl_gene)
-tpm.colon.pyro.df2 <- left_join(tpm.colon.pyro.df, pyroptosis.genes %>% dplyr::select(ensembl_gene, gene_symbol), by = c("ensembl"="ensembl_gene"))
+tpm.colon.pyro.df2 <- left_join(tpm.colon.pyro.df, pyroptosis.genes %>% dplyr::select(ensembl_gene, gene_symbol), by = c("ensembl" = "ensembl_gene"))
 tpm.colon.pyro.df$gene_symbol <- tpm.colon.pyro.df2$gene_symbol
 tpm.colon.pyro.df
 ```
@@ -274,10 +277,10 @@ tpm.colon.pyro.df
 Compute the median TPM per gene.
 
 ```{r}
-gene.expressions.pyro <- data.frame (
+gene.expressions.pyro <- data.frame(
   row.names = tpm.colon.pyro.df$gene_symbol,
-  tissue = 'Colon',
-  tpm = matrixStats::rowMedians(as.matrix(tpm.colon.pyro.df %>% dplyr::select(-c('ensembl', 'gene_symbol'))))
+  tissue = "Colon",
+  tpm = matrixStats::rowMedians(as.matrix(tpm.colon.pyro.df %>% dplyr::select(-c("ensembl", "gene_symbol"))))
 )
 gene.expressions.pyro
 ```
