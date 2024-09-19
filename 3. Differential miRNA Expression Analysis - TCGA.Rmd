@@ -450,11 +450,47 @@ pyroptosis.genes <- msigdbr(species = "human", category = "C2", subcategory = "C
 head(pyroptosis.genes)
 ```
 
+Get the gene symbols of the genes included in the pyroptosis gene set, and convert them to RefSeq IDs.
+
+```{r}
+rcd_gene_symbols <- pyroptosis.genes$gene_symbol
+rcd_refseq <- getBM(attributes = c("refseq_mrna", "hgnc_symbol"), filters = "hgnc_symbol", values = rcd_gene_symbols, mart = mart)
+head(rcd_refseq)
+```
+Write the RefSeq IDs of the mRNAs of interest to a file.
+
+```{r}
+rcd_mrna_file <- "temp/pyroptosis-genes-refseq.txt"
+rcd_refseq.unique_ids <- unique(unlist(rcd_refseq$refseq_mrna))
+rcd_refseq.unique_ids <- rcd_refseq.unique_ids[!sapply(rcd_refseq.unique_ids, identical, "")]
+
+# Regenerate the file every time
+if (file.exists(rcd_mrna_file)) {
+  file.remove(rcd_mrna_file)
+}
+
+invisible(lapply(rcd_refseq.unique_ids, write, rcd_mrna_file, append = TRUE, ncolumns = 1))
+```
+
+Run the following Python script to fetch the miRNAs targeting the mRNAs of interest:
+
+```
+python util/get-mirna.py --mrna-list temp/pyroptosis-genes-refseq.txt --output temp/pyroptosis-mirna.txt
+```
+
+Running this script should generate a file named `pyroptosis-mirna.txt` inside the `temp` directory.
+
+Fetch the miRNAs from the said file.
+
+```{r}
+pyroptosis.mirna <- read.table("temp/pyroptosis-mirna.txt")
+pyroptosis.mirna <- unique(unlist(pyroptosis.mirna$V1))
+```
+
 Filter the genes to include only those in the pyroptosis gene set.
 
 ```{r}
-rownames(pyroptosis.genes) <- pyroptosis.genes$ensembl_gene
-coad_pyroptosis <- count_matrix[rownames(count_matrix) %in% pyroptosis.genes$ensembl_gene, ]
+coad_pyroptosis <- count_matrix[rownames(count_matrix) %in% pyroptosis.mirna, ]
 coad_pyroptosis <- coad_pyroptosis[, rownames(samples)]
 
 # Check if all samples in the counts dataframe are in the samples dataframe
@@ -487,20 +523,19 @@ deseq.bbl.data <- data.frame(
   stat = deseq.results$stat,
   pvalue = deseq.results$pvalue,
   padj = deseq.results$padj,
-  cancer_type = "Colon",
-  gene_symbol = pyroptosis.genes[rownames(deseq.results), "gene_symbol"]
+  cancer_type = "Colon"
 )
 deseq.bbl.data
 ```
 Plot the results.
 
-```{r, fig.width=10,fig.height=10}
-ggplot(deseq.bbl.data, aes(x = cancer_type, y = gene_symbol, size = padj, fill = log2FoldChange)) +
+```{r, fig.width=10,fig.height=45}
+ggplot(deseq.bbl.data, aes(x = cancer_type, y = rownames(deseq.bbl.data), size = padj, fill = log2FoldChange)) +
   geom_point(alpha = 0.5, shape = 21, color = "black") +
   scale_size(trans = "reverse") +
   scale_fill_gradient2(low = "blue", mid = "white", high = "red", limits = c(-1.5, 3)) +
   theme_minimal() +
   theme(legend.position = "bottom") +
   theme(legend.position = "bottom") +
-  labs(size = "FDR", fill = "log2 FC", x = "Cancer type", y = "Gene")
+  labs(size = "FDR", fill = "log2 FC", x = "Cancer type", y = "miRNA")
 ```
