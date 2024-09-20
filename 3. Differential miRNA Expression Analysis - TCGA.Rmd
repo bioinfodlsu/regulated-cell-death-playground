@@ -132,7 +132,7 @@ count_matrix <- count_matrix[, rownames(samples)]
 all(colnames(count_matrix) == rownames(samples))
 ```
 
-## IV. Differential gene expression analysis
+## IV. Differential miRNA expression analysis
 
 References: 
 
@@ -172,7 +172,7 @@ plot_total_counts(dds)
 plot_library_complexity(dds)
 plot_gene_detection(dds)
 ```
-Perform gene filtering.
+Perform miRNA filtering.
 
 We determined `min_count` empirically by looking at the red trend line in the variance stabilization plot. Ideally, this trend line should be flat (i.e., stable).
 
@@ -402,7 +402,7 @@ coad_ferroptosis <- coad_ferroptosis[, rownames(samples)]
 # Check if all samples in the counts dataframe are in the samples dataframe
 all(colnames(coad_ferroptosis) == rownames(samples))
 ```
-Perform differential gene expression analysis.
+Perform differential miRNA expression analysis.
 
 ```{r}
 dds <- DESeqDataSetFromMatrix(
@@ -510,7 +510,7 @@ coad_pyroptosis <- coad_pyroptosis[, rownames(samples)]
 all(colnames(coad_pyroptosis) == rownames(samples))
 ```
 
-Perform differential gene expression analysis.
+Perform differential miRNA expression analysis.
 
 ```{r}
 dds <- DESeqDataSetFromMatrix(
