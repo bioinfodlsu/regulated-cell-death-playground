@@ -1,0 +1,361 @@
+---
+title: "Differential Gene Expression Analysis - TCGA - Pan-cancer"
+output: html_notebook
+---
+
+## I. Preliminaries
+
+### Loading libraries
+
+```{r}
+library("tidyverse")
+library("tibble")
+library("msigdbr")
+library("ggplot2")
+library("TCGAbiolinks")
+library("RNAseqQC")
+library("DESeq2")
+library("ensembldb")
+library("purrr")
+library("magrittr")
+library("vsn")
+library("matrixStats")
+library("dplyr")
+library("grex")
+```
+
+## II. Downloading the TCGA gene expression data 
+
+Create a function for downloading TCGA gene expression data. 
+
+For more detailed documentation, refer to `2. Differential Gene Expression Analysis - TCGA.rmd`.
+
+```{r}
+query_and_filter_samples <- function(project) {
+  query_tumor <- GDCquery(
+    project = project,
+    data.category = "Transcriptome Profiling",
+    data.type = "Gene Expression Quantification",
+    experimental.strategy = "RNA-Seq",
+    workflow.type = "STAR - Counts",
+    access = "open",
+    sample.type = "Primary Tumor"
+  )
+  tumor <- getResults(query_tumor)
+  
+  query_normal <- GDCquery(
+    project = project,
+    data.category = "Transcriptome Profiling",
+    data.type = "Gene Expression Quantification",
+    experimental.strategy = "RNA-Seq",
+    workflow.type = "STAR - Counts",
+    access = "open",
+    sample.type = "Solid Tissue Normal"
+  )
+  normal <- getResults(query_normal)
+  
+  submitter_ids <- inner_join(tumor, normal, by = "cases.submitter_id") %>%
+    dplyr::select(cases.submitter_id)
+  tumor <- tumor %>%
+    dplyr::filter(cases.submitter_id %in% submitter_ids$cases.submitter_id)
+  normal <- normal %>%
+    dplyr::filter(cases.submitter_id %in% submitter_ids$cases.submitter_id)
+  
+  samples <- rbind(tumor, normal)
+  unique(samples$sample_type)
+  
+  query_project <- GDCquery(
+    project = project,
+    data.category = "Transcriptome Profiling",
+    data.type = "Gene Expression Quantification",
+    experimental.strategy = "RNA-Seq",
+    workflow.type = "STAR - Counts",
+    access = "open",
+    sample.type = c("Solid Tissue Normal", "Primary Tumor"),
+    barcode = as.list(samples$sample.submitter_id)
+  )
+  
+  GDCdownload(query_project)
+  
+  return (list(samples = samples, query_project = query_project))
+}
+```
+
+Download the TCGA gene expression data for different cancer types.
+
+Refer to this link for the list of TCGA cancer type abbreviations: https://gdc.cancer.gov/resources-tcga-users/tcga-code-tables/tcga-study-abbreviations
+
+```{r}
+projects <- c("TCGA-LUSC", "TCGA-COAD", "TCGA-KICH", "TCGA-KIRC", "TCGA-PRAD",
+              "TCGA-BRCA", "TCGA-HNSC", "TCGA-KIRP", "TCGA-LIHC", "TCGA-STAD",
+              "TCGA-THCA", "TCGA-BLCA", "TCGA-LUAD", "TCGA-ESCA")
+
+samples <- list()
+project_data <- list()
+
+for (project in projects) {
+  result <- query_and_filter_samples(project)
+  
+  samples[[project]] <- result$samples
+  project_data[[project]] <- result$query_project
+  print(project_data[[project]])
+}
+```
+
+
+Running the code block above should generate and populate a directory named `GDCdata`.
+
+## III. Data preprocessing
+
+Construct the RNA-seq count matrix.
+
+```{r}
+
+
+tcga_data <- GDCprepare(query_coad, summarizedExperiment = TRUE)
+count_matrix <- assay(tcga_data, "unstranded")
+
+# Remove duplicate entries
+count_matrix_df <- data.frame(count_matrix)
+count_matrix_df <- count_matrix_df[!duplicated(count_matrix_df), ]
+count_matrix <- data.matrix(count_matrix_df)
+rownames(count_matrix) <- cleanid(rownames(count_matrix))
+count_matrix <- count_matrix[!(duplicated(rownames(count_matrix)) | duplicated(rownames(count_matrix), fromLast = TRUE)), ]
+
+head(count_matrix)
+```
+Format the `samples` table so that it can be fed as input to DESeq2.
+
+```{r}
+rownames(samples) <- samples$cases
+samples <- samples %>%
+  dplyr::select(case = "cases.submitter_id", type = "sample_type")
+samples$type <- str_replace(samples$type, "Solid Tissue Normal", "normal")
+samples$type <- str_replace(samples$type, "Primary Tumor", "tumor")
+```
+
+DESeq2 requires the row names of `samples` should be identical to the column names of `count_matrix`.
+
+```{r}
+colnames(count_matrix) <- gsub(x = colnames(count_matrix), pattern = "\\.", replacement = "-")
+count_matrix <- count_matrix[, rownames(samples)]
+
+# Sanity check
+all(colnames(count_matrix) == rownames(samples))
+```
+
+## IV. Differential gene expression analysis
+
+References: 
+
+- Official documentation: https://www.bioconductor.org/packages/release/bioc/vignettes/DESeq2/inst/doc/DESeq2.html
+- Good balance of theory and hands-on: https://hbctraining.github.io/DGE_workshop/lessons/04_DGE_DESeq2_analysis.html
+- Quality control: https://cran.r-project.org/web/packages/RNAseqQC/vignettes/introduction.html
+
+Construct the `DESeqDataSet` object.
+
+```{r}
+dds <- DESeqDataSetFromMatrix(
+  countData = count_matrix,
+  colData = samples,
+  design = ~type
+)
+```
+
+
+### Regulated Cell Death
+
+Refer to `1. Exploratory Data Analysis - MSigDB Gene Sets + GTEx TPM.rmd` for more detailed documentation on obtaining the gene sets.
+
+#### Necroptosis
+
+Fetch the necroptosis gene set.
+
+```{r}
+necroptosis.genes <- msigdbr(species = "human", category = "C5", subcategory = "GO:BP") %>%
+  dplyr::filter(gs_name == "GOBP_NECROPTOTIC_SIGNALING_PATHWAY")
+head(necroptosis.genes)
+```
+Filter the genes to include only those in the necroptosis gene set.
+
+```{r}
+rownames(necroptosis.genes) <- necroptosis.genes$ensembl_gene
+coad_necroptosis <- count_matrix[rownames(count_matrix) %in% necroptosis.genes$ensembl_gene, ]
+coad_necroptosis <- coad_necroptosis[, rownames(samples)]
+
+# Check if all samples in the counts dataframe are in the samples dataframe
+all(colnames(coad_necroptosis) == rownames(samples))
+```
+
+Perform differential gene expression analysis.
+
+```{r}
+dds <- DESeqDataSetFromMatrix(
+  countData = coad_necroptosis,
+  colData = samples,
+  design = ~type
+)
+dds <- filter_genes(dds, min_count = 10)
+dds$type <- relevel(dds$type, ref = "normal")
+dds <- DESeq(dds)
+res <- results(dds)
+summary(res)
+```
+
+Prettify the display of results.
+
+```{r}
+deseq.results <- res
+deseq.bbl.data <- data.frame(
+  row.names = rownames(deseq.results),
+  baseMean = deseq.results$baseMean,
+  log2FoldChange = deseq.results$log2FoldChange,
+  lfcSE = deseq.results$lfcSE,
+  stat = deseq.results$stat,
+  pvalue = deseq.results$pvalue,
+  padj = deseq.results$padj,
+  cancer_type = "Colon",
+  gene_symbol = necroptosis.genes[rownames(deseq.results), "gene_symbol"]
+)
+deseq.bbl.data
+```
+
+Plot the results.
+
+```{r}
+ggplot(deseq.bbl.data, aes(x = cancer_type, y = gene_symbol, size = padj, fill = log2FoldChange)) +
+  geom_point(alpha = 0.5, shape = 21, color = "black") +
+  scale_size(trans = "reverse") +
+  scale_fill_gradient2(low = "blue", mid = "white", high = "red", limits = c(-1.5, 3)) +
+  theme_minimal() +
+  theme(legend.position = "bottom") +
+  theme(legend.position = "bottom") +
+  labs(size = "FDR", fill = "log2 FC", x = "Cancer type", y = "Gene")
+```
+#### Ferroptosis
+
+Fetch the ferroptosis gene set.
+
+```{r}
+ferroptosis.genes <- msigdbr(species = "human", category = "C2", subcategory = "CP:WIKIPATHWAYS") %>%
+  dplyr::filter(gs_name == "WP_FERROPTOSIS")
+head(ferroptosis.genes)
+```
+
+Filter the genes to include only those in the ferroptosis gene set.
+
+```{r}
+rownames(ferroptosis.genes) <- ferroptosis.genes$ensembl_gene
+coad_ferroptosis <- count_matrix[rownames(count_matrix) %in% ferroptosis.genes$ensembl_gene, ]
+coad_ferroptosis <- coad_ferroptosis[, rownames(samples)]
+
+# Check if all samples in the counts dataframe are in the samples dataframe
+all(colnames(coad_ferroptosis) == rownames(samples))
+```
+Perform differential gene expression analysis.
+
+```{r}
+dds <- DESeqDataSetFromMatrix(
+  countData = coad_ferroptosis,
+  colData = samples,
+  design = ~type
+)
+dds <- filter_genes(dds, min_count = 10)
+dds$type <- relevel(dds$type, ref = "normal")
+dds <- DESeq(dds)
+res <- results(dds)
+summary(res)
+```
+Prettify the display of results.
+
+```{r}
+deseq.results <- res
+deseq.bbl.data <- data.frame(
+  row.names = rownames(deseq.results),
+  baseMean = deseq.results$baseMean,
+  log2FoldChange = deseq.results$log2FoldChange,
+  lfcSE = deseq.results$lfcSE,
+  stat = deseq.results$stat,
+  pvalue = deseq.results$pvalue,
+  padj = deseq.results$padj,
+  cancer_type = "Colon",
+  gene_symbol = ferroptosis.genes[rownames(deseq.results), "gene_symbol"]
+)
+deseq.bbl.data
+```
+Plot the results.
+
+```{r, fig.width=10,fig.height=15}
+ggplot(deseq.bbl.data, aes(x = cancer_type, y = gene_symbol, size = padj, fill = log2FoldChange)) +
+  geom_point(alpha = 0.5, shape = 21, color = "black") +
+  scale_size(trans = "reverse") +
+  scale_fill_gradient2(low = "blue", mid = "white", high = "red", limits = c(-1.5, 3)) +
+  theme_minimal() +
+  theme(legend.position = "bottom") +
+  theme(legend.position = "bottom") +
+  labs(size = "FDR", fill = "log2 FC", x = "Cancer type", y = "Gene")
+```
+#### Pyroptosis
+
+Fetch the pyroptosis gene set.
+
+```{r}
+pyroptosis.genes <- msigdbr(species = "human", category = "C2", subcategory = "CP:REACTOME") %>%
+  dplyr::filter(gs_name == "REACTOME_PYROPTOSIS")
+head(pyroptosis.genes)
+```
+
+Filter the genes to include only those in the pyroptosis gene set.
+
+```{r}
+rownames(pyroptosis.genes) <- pyroptosis.genes$ensembl_gene
+coad_pyroptosis <- count_matrix[rownames(count_matrix) %in% pyroptosis.genes$ensembl_gene, ]
+coad_pyroptosis <- coad_pyroptosis[, rownames(samples)]
+
+# Check if all samples in the counts dataframe are in the samples dataframe
+all(colnames(coad_pyroptosis) == rownames(samples))
+```
+
+Perform differential gene expression analysis.
+
+```{r}
+dds <- DESeqDataSetFromMatrix(
+  countData = coad_pyroptosis,
+  colData = samples,
+  design = ~type
+)
+dds <- filter_genes(dds, min_count = 10)
+dds$type <- relevel(dds$type, ref = "normal")
+dds <- DESeq(dds)
+res <- results(dds)
+summary(res)
+```
+Prettify the display of results.
+
+```{r}
+deseq.results <- res
+deseq.bbl.data <- data.frame(
+  row.names = rownames(deseq.results),
+  baseMean = deseq.results$baseMean,
+  log2FoldChange = deseq.results$log2FoldChange,
+  lfcSE = deseq.results$lfcSE,
+  stat = deseq.results$stat,
+  pvalue = deseq.results$pvalue,
+  padj = deseq.results$padj,
+  cancer_type = "Colon",
+  gene_symbol = pyroptosis.genes[rownames(deseq.results), "gene_symbol"]
+)
+deseq.bbl.data
+```
+Plot the results.
+
+```{r, fig.width=10,fig.height=10}
+ggplot(deseq.bbl.data, aes(x = cancer_type, y = gene_symbol, size = padj, fill = log2FoldChange)) +
+  geom_point(alpha = 0.5, shape = 21, color = "black") +
+  scale_size(trans = "reverse") +
+  scale_fill_gradient2(low = "blue", mid = "white", high = "red", limits = c(-1.5, 3)) +
+  theme_minimal() +
+  theme(legend.position = "bottom") +
+  theme(legend.position = "bottom") +
+  labs(size = "FDR", fill = "log2 FC", x = "Cancer type", y = "Gene")
+```
