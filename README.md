@@ -11,7 +11,7 @@ If you want to replicate the analyses:
 2. Most IDEs like [RStudio](https://posit.co/download/rstudio-desktop/) will automatically prompt you to install the required dependencies when you open a notebook. <br>
    These dependencies are typically downloaded via CRAN. 
 3. However, some bioinformatics-specific dependencies are not available at CRAN and have to be downloaded using Bioconductor. <br>
-   To these bioinformatics-specific dependencies in one go, run `install-dependencies.r`
+   To download these bioinformatics-specific dependencies in one go, run `install-dependencies.r`
 
 ## 💻 Authors
 - **Mark Edward M. Gonzales** <br>
