@@ -262,7 +262,7 @@ top_genes <- deseq.bbl.data.combined %>%
 ggplot(top_genes, aes(y=cancer_type, x=gene_symbol, size=fdr_category, fill=log2FoldChange)) +
     geom_point(alpha=0.5, shape=21, color="black") +
     scale_size_manual(values = sizes) +
-    scale_fill_gradient2(low = "blue", mid = "white", high = "red", limits = c(-1.5,3)) +
+    scale_fill_gradient2(low = "blue", mid = "white", high = "red", limits = c(min(deseq.bbl.data.combined$log2FoldChange),max(deseq.bbl.data.combined$log2FoldChange))) +
     theme_minimal() +
     theme(
       axis.text.x = element_text(size = 9, angle = 90, hjust = 1)
@@ -282,7 +282,7 @@ ferroptosis.genes <- msigdbr(species = "human", category = "C2", subcategory = "
 head(ferroptosis.genes)
 ```
 
-Filter the genes to include only those in the necroptosis gene set.
+Filter the genes to include only those in the ferroptosis gene set.
 
 ```{r}
 tcga_ferroptosis <- list()
@@ -354,11 +354,104 @@ top_genes <- deseq.bbl.data.combined %>%
   dplyr::filter(rank <= 10) %>%
   ungroup()
 
-# “Genes with the threshold of FC>2 and FDR ≤ 0.05 were considered as significantly differentially expressed”
 ggplot(top_genes, aes(y=cancer_type, x=gene_symbol, size=fdr_category, fill=log2FoldChange)) +
     geom_point(alpha=0.5, shape=21, color="black") +
     scale_size_manual(values = sizes) +
-    scale_fill_gradient2(low = "blue", mid = "white", high = "red", limits = c(-1.5,3)) +
+    scale_fill_gradient2(low = "blue", mid = "white", high = "red", limits = c(min(deseq.bbl.data.combined$log2FoldChange),max(deseq.bbl.data.combined$log2FoldChange))) +
+    theme_minimal() +
+    theme(
+      axis.text.x = element_text(size = 9, angle = 90, hjust = 1)
+    ) +
+    theme(legend.position="bottom") +
+    theme(legend.position = "bottom")+
+    labs(size = "FDR", fill = "log2 FC", y = "Cancer type", x = "Gene")
+```
+
+#### Pyroptosis
+
+Fetch the pyroptosis gene set.
+
+```{r}
+pyroptosis.genes <- msigdbr(species = "human", category = "C2", subcategory = "CP:REACTOME") %>%
+  dplyr::filter(gs_name == "REACTOME_PYROPTOSIS")
+head(pyroptosis.genes)
+```
+
+Filter the genes to include only those in the pyroptosis gene set.
+
+```{r}
+tcga_pyroptosis <- list()
+
+for (project in projects) {
+  rownames(pyroptosis.genes) <- pyroptosis.genes$ensembl_gene
+  tcga_pyroptosis[[project]] <- tcga_matrix[[project]][rownames(tcga_matrix[[project]]) %in% pyroptosis.genes$ensembl_gene, ]
+  tcga_pyroptosis[[project]] <- tcga_pyroptosis[[project]][, rownames(samples[[project]])]
+  
+  # Check if all samples in the counts dataframe are in the samples dataframe
+  print(all(colnames(tcga_pyroptosis[[project]]) == rownames((samples[[project]]))))
+}
+```
+Perform differential gene expression analysis.
+
+```{r}
+dds_pyroptosis <- list()
+res_pyroptosis <- list()
+
+for (project in projects) {
+  dds <- DESeqDataSetFromMatrix(
+    countData = tcga_pyroptosis[[project]],
+    colData = samples[[project]],
+    design = ~type
+  )
+  dds <- filter_genes(dds, min_count = 10)
+  dds$type <- relevel(dds$type, ref = "normal")
+  dds_pyroptosis[[project]] <- DESeq(dds)
+  res_pyroptosis[[project]] <- results(dds_pyroptosis[[project]])
+}
+```
+
+Prettify the display of results.
+
+```{r}
+deseq.bbl.data <- list()
+
+for (project in projects) {
+  deseq.results <- res_pyroptosis[[project]]
+  deseq.bbl.data[[project]] <- data.frame(
+    row.names = rownames(deseq.results),
+    baseMean = deseq.results$baseMean,
+    log2FoldChange = deseq.results$log2FoldChange,
+    lfcSE = deseq.results$lfcSE,
+    stat = deseq.results$stat,
+    pvalue = deseq.results$pvalue,
+    padj = deseq.results$padj,
+    cancer_type = project,
+    gene_symbol = pyroptosis.genes[rownames(deseq.results), "gene_symbol"]
+  )
+}
+
+deseq.bbl.data.combined <- bind_rows(deseq.bbl.data)
+deseq.bbl.data.combined
+```
+Plot the results.
+
+```{r}
+deseq.bbl.data.combined <- deseq.bbl.data.combined %>%
+  mutate(fdr_category = cut(padj,
+                            breaks = c(-Inf, 1e-15, 1e-10, 1e-5, 0.05),
+                            labels = c("<10^-15", "10^-10", "10^-5", "0.05"),
+                            right = FALSE))
+
+top_genes <- deseq.bbl.data.combined %>%
+  group_by(cancer_type) %>%
+  mutate(rank = rank(-abs(log2FoldChange))) %>%
+  dplyr::filter(rank <= 10) %>%
+  ungroup()
+
+ggplot(top_genes, aes(y=cancer_type, x=gene_symbol, size=fdr_category, fill=log2FoldChange)) +
+    geom_point(alpha=0.5, shape=21, color="black") +
+    scale_size_manual(values = sizes) +
+    scale_fill_gradient2(low = "blue", mid = "white", high = "red", limits = c(min(deseq.bbl.data.combined$log2FoldChange),max(deseq.bbl.data.combined$log2FoldChange))) +
     theme_minimal() +
     theme(
       axis.text.x = element_text(size = 9, angle = 90, hjust = 1)
