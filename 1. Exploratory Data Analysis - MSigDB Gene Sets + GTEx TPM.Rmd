@@ -79,7 +79,7 @@ colon.sample.df <- rnaseq.sample.df %>% dplyr::filter(SMTSD == "Colon - Sigmoid"
 head(colon.sample.df)
 ```
 
-## IV. Loading TPM data from GTEx.
+## IV. Loading TPM data from GTEx
 
 `GTEx_Analysis_2017-06-05_v8_RNASeQCv1.1.9_gene_tpm.gct` contains the gene TPMs.
 

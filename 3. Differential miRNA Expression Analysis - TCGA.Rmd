@@ -25,7 +25,7 @@ library("grex")
 library("biomaRt")
 ```
 
-## II. Downloading the TCGA miRNA expression data 
+## II. Downloading TCGA miRNA expression data 
 
 Download miRNA expression data from The Cancer Genome Atlas (TCGA):
 - `TCGA-COAD` refers to the biospecimen data for colon adenocarcinoma.

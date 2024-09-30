@@ -24,7 +24,7 @@ library("dplyr")
 library("grex")
 ```
 
-## II. Downloading the TCGA gene expression data 
+## II. Downloading TCGA gene expression data 
 
 Download gene expression data from The Cancer Genome Atlas (TCGA):
 - `TCGA-COAD` refers to the biospecimen data for colon adenocarcinoma.
