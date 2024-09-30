@@ -340,7 +340,7 @@ Plot the results.
 ggplot(deseq.bbl.data.filtered, aes(x = cancer_type, y = rownames(deseq.bbl.data.filtered), size = padj, fill = log2FoldChange)) +
   geom_point(alpha = 0.5, shape = 21, color = "black") +
   scale_size(trans = "reverse") +
-  scale_fill_gradient2(low = "blue", mid = "white", high = "red", limits = c(-1.5, 3)) +
+  scale_fill_gradient2(low = "blue", mid = "white", high = "red", limits = c(min(deseq.bbl.data.filtered$log2FoldChange),max(deseq.bbl.data.filtered$log2FoldChange))) +
   theme_minimal() +
   theme(legend.position = "bottom") +
   theme(legend.position = "bottom") +
@@ -446,7 +446,7 @@ Plot the results.
 ggplot(deseq.bbl.data.filtered, aes(x = cancer_type, y = rownames(deseq.bbl.data.filtered), size = padj, fill = log2FoldChange)) +
   geom_point(alpha = 0.5, shape = 21, color = "black") +
   scale_size(trans = "reverse") +
-  scale_fill_gradient2(low = "blue", mid = "white", high = "red", limits = c(-1.5, 3)) +
+  scale_fill_gradient2(low = "blue", mid = "white", high = "red", limits = c(min(deseq.bbl.data.filtered$log2FoldChange),max(deseq.bbl.data.filtered$log2FoldChange))) +
   theme_minimal() +
   theme(legend.position = "bottom") +
   theme(legend.position = "bottom") +
@@ -555,7 +555,7 @@ Plot the results.
 ggplot(deseq.bbl.data.filtered, aes(x = cancer_type, y = rownames(deseq.bbl.data.filtered), size = padj, fill = log2FoldChange)) +
   geom_point(alpha = 0.5, shape = 21, color = "black") +
   scale_size(trans = "reverse") +
-  scale_fill_gradient2(low = "blue", mid = "white", high = "red", limits = c(-1.5, 3)) +
+  scale_fill_gradient2(low = "blue", mid = "white", high = "red", limits = c(min(deseq.bbl.data.filtered$log2FoldChange),max(deseq.bbl.data.filtered$log2FoldChange))) +
   theme_minimal() +
   theme(legend.position = "bottom") +
   theme(legend.position = "bottom") +
