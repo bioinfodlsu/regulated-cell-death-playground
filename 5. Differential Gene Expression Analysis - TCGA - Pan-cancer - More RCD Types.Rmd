@@ -188,9 +188,11 @@ Fetch the gene set of interest.
 ```{r}
 genes <- read.csv(paste0(RCDdb, "Alkaliptosis.csv"))
 genes$gene_id <- cleanid(genes$gene_id)
-head(genes)
+genes <- genes[!duplicated(genes[ , c("gene_id")]),]
+genes <- genes[complete.cases(genes), ]
+genes
 ```
-Filter the genes to include only those in the gene set of interest.
+Filter the genes to include only those in the gene set of interest, and then perform differential gene expression analysis.
 
 ```{r}
 tcga_rcd <- list()
@@ -199,15 +201,8 @@ for (project in projects) {
   rownames(genes) <- genes$gene_id
   tcga_rcd[[project]] <- tcga_matrix[[project]][rownames(tcga_matrix[[project]]) %in% genes$gene_id, ]
   tcga_rcd[[project]] <- tcga_rcd[[project]][, rownames(samples[[project]])]
-  
-  # Check if all samples in the counts dataframe are in the samples dataframe
-  print(all(colnames(tcga_rcd[[project]]) == rownames((samples[[project]]))))
 }
-```
 
-Perform differential gene expression analysis.
-
-```{r}
 dds_rcd <- list()
 res_rcd <- list()
 
@@ -224,11 +219,7 @@ for (project in projects) {
   dds_rcd[[project]] <- DESeq(dds)
   res_rcd[[project]] <- results(dds_rcd[[project]])
 }
-```
 
-Prettify the display of results.
-
-```{r}
 deseq.bbl.data <- list()
 
 for (project in projects) {
@@ -242,23 +233,17 @@ for (project in projects) {
     pvalue = deseq.results$pvalue,
     padj = deseq.results$padj,
     cancer_type = project,
-    gene_symbol = genes[rownames(deseq.results), "gene_symbol"]
+    gene_symbol = genes[rownames(deseq.results), "gene"]
   )
 }
 
 deseq.bbl.data.combined <- bind_rows(deseq.bbl.data)
 deseq.bbl.data.combined
 ```
-```{r}
-rownames(deseq.results)
-```
-```{r}
-genes[rownames(deseq.results), ]
-```
 
 Plot the results.
 
-```{r}
+```{r, fig.width=15}
 deseq.bbl.data.combined <- deseq.bbl.data.combined %>%
   mutate(fdr_category = cut(padj,
                             breaks = c(-Inf, 1e-15, 1e-10, 1e-5, 0.05),
@@ -284,3 +269,180 @@ ggplot(top_genes, aes(y=cancer_type, x=gene_symbol, size=fdr_category, fill=log2
     labs(size = "FDR", fill = "log2 FC", y = "Cancer type", x = "Gene")
 ```
 
+#### Apoptosis
+
+Fetch the gene set of interest.
+
+```{r}
+genes <- read.csv(paste0(RCDdb, "Apoptosis.csv"))
+genes$gene_id <- cleanid(genes$gene_id)
+genes <- genes[!duplicated(genes[ , c("gene_id")]),]
+genes <- genes[complete.cases(genes), ]
+genes
+```
+
+Filter the genes to include only those in the gene set of interest, and then perform differential gene expression analysis.
+
+```{r}
+tcga_rcd <- list()
+
+for (project in projects) {
+  rownames(genes) <- genes$gene_id
+  tcga_rcd[[project]] <- tcga_matrix[[project]][rownames(tcga_matrix[[project]]) %in% genes$gene_id, ]
+  tcga_rcd[[project]] <- tcga_rcd[[project]][, rownames(samples[[project]])]
+}
+
+dds_rcd <- list()
+res_rcd <- list()
+
+for (project in projects) {
+  print(project)
+  print("=============")
+  dds <- DESeqDataSetFromMatrix(
+    countData = tcga_rcd[[project]],
+    colData = samples[[project]],
+    design = ~type
+  )
+  dds <- filter_genes(dds, min_count = 10)
+  dds$type <- relevel(dds$type, ref = "normal")
+  dds_rcd[[project]] <- DESeq(dds)
+  res_rcd[[project]] <- results(dds_rcd[[project]])
+}
+
+deseq.bbl.data <- list()
+
+for (project in projects) {
+  deseq.results <- res_rcd[[project]]
+  deseq.bbl.data[[project]] <- data.frame(
+    row.names = rownames(deseq.results),
+    baseMean = deseq.results$baseMean,
+    log2FoldChange = deseq.results$log2FoldChange,
+    lfcSE = deseq.results$lfcSE,
+    stat = deseq.results$stat,
+    pvalue = deseq.results$pvalue,
+    padj = deseq.results$padj,
+    cancer_type = project,
+    gene_symbol = genes[rownames(deseq.results), "gene"]
+  )
+}
+
+deseq.bbl.data.combined <- bind_rows(deseq.bbl.data)
+deseq.bbl.data.combined
+```
+
+Plot the results.
+
+```{r, fig.width=15}
+deseq.bbl.data.combined <- deseq.bbl.data.combined %>%
+  mutate(fdr_category = cut(padj,
+                            breaks = c(-Inf, 1e-15, 1e-10, 1e-5, 0.05),
+                            labels = c("<10^-15", "10^-10", "10^-5", "0.05"),
+                            right = FALSE))
+
+top_genes <- deseq.bbl.data.combined %>%
+  group_by(cancer_type) %>%
+  mutate(rank = rank(-abs(log2FoldChange))) %>%
+  dplyr::filter(rank <= 10) %>%
+  ungroup()
+
+ggplot(top_genes, aes(y=cancer_type, x=gene_symbol, size=fdr_category, fill=log2FoldChange)) +
+    geom_point(alpha=0.5, shape=21, color="black") +
+    scale_size_manual(values = sizes) +
+    scale_fill_gradient2(low = "blue", mid = "white", high = "red", limits = c(min(deseq.bbl.data.combined$log2FoldChange),max(deseq.bbl.data.combined$log2FoldChange))) +
+    theme_minimal() +
+    theme(
+      axis.text.x = element_text(size = 9, angle = 90, hjust = 1)
+    ) +
+    theme(legend.position="bottom") +
+    theme(legend.position = "bottom")+
+    labs(size = "FDR", fill = "log2 FC", y = "Cancer type", x = "Gene")
+```
+
+#### Autophagy-Dependent Cell Death
+
+Fetch the gene set of interest.
+
+```{r}
+genes <- read.csv(paste0(RCDdb, "Autophagy_dependent_cell_death.csv"))
+genes$gene_id <- cleanid(genes$gene_id)
+genes <- genes[!duplicated(genes[ , c("gene_id")]),]
+genes <- genes[complete.cases(genes), ]
+genes
+```
+
+Filter the genes to include only those in the gene set of interest, and then perform differential gene expression analysis.
+
+```{r}
+tcga_rcd <- list()
+
+for (project in projects) {
+  rownames(genes) <- genes$gene_id
+  tcga_rcd[[project]] <- tcga_matrix[[project]][rownames(tcga_matrix[[project]]) %in% genes$gene_id, ]
+  tcga_rcd[[project]] <- tcga_rcd[[project]][, rownames(samples[[project]])]
+}
+
+dds_rcd <- list()
+res_rcd <- list()
+
+for (project in projects) {
+  print(project)
+  print("=============")
+  dds <- DESeqDataSetFromMatrix(
+    countData = tcga_rcd[[project]],
+    colData = samples[[project]],
+    design = ~type
+  )
+  dds <- filter_genes(dds, min_count = 10)
+  dds$type <- relevel(dds$type, ref = "normal")
+  dds_rcd[[project]] <- DESeq(dds)
+  res_rcd[[project]] <- results(dds_rcd[[project]])
+}
+
+deseq.bbl.data <- list()
+
+for (project in projects) {
+  deseq.results <- res_rcd[[project]]
+  deseq.bbl.data[[project]] <- data.frame(
+    row.names = rownames(deseq.results),
+    baseMean = deseq.results$baseMean,
+    log2FoldChange = deseq.results$log2FoldChange,
+    lfcSE = deseq.results$lfcSE,
+    stat = deseq.results$stat,
+    pvalue = deseq.results$pvalue,
+    padj = deseq.results$padj,
+    cancer_type = project,
+    gene_symbol = genes[rownames(deseq.results), "gene"]
+  )
+}
+
+deseq.bbl.data.combined <- bind_rows(deseq.bbl.data)
+deseq.bbl.data.combined
+```
+
+Plot the results.
+
+```{r, fig.width=15}
+deseq.bbl.data.combined <- deseq.bbl.data.combined %>%
+  mutate(fdr_category = cut(padj,
+                            breaks = c(-Inf, 1e-15, 1e-10, 1e-5, 0.05),
+                            labels = c("<10^-15", "10^-10", "10^-5", "0.05"),
+                            right = FALSE))
+
+top_genes <- deseq.bbl.data.combined %>%
+  group_by(cancer_type) %>%
+  mutate(rank = rank(-abs(log2FoldChange))) %>%
+  dplyr::filter(rank <= 10) %>%
+  ungroup()
+
+ggplot(top_genes, aes(y=cancer_type, x=gene_symbol, size=fdr_category, fill=log2FoldChange)) +
+    geom_point(alpha=0.5, shape=21, color="black") +
+    scale_size_manual(values = sizes) +
+    scale_fill_gradient2(low = "blue", mid = "white", high = "red", limits = c(min(deseq.bbl.data.combined$log2FoldChange),max(deseq.bbl.data.combined$log2FoldChange))) +
+    theme_minimal() +
+    theme(
+      axis.text.x = element_text(size = 9, angle = 90, hjust = 1)
+    ) +
+    theme(legend.position="bottom") +
+    theme(legend.position = "bottom")+
+    labs(size = "FDR", fill = "log2 FC", y = "Cancer type", x = "Gene")
+```
