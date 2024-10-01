@@ -251,6 +251,8 @@ deseq.bbl.data.combined
 Plot the results.
 
 ```{r}
+sizes <- c("<10^-15" = 4, "10^-10" = 3, "10^-5" = 2, "0.05" = 1)
+
 deseq.bbl.data.combined <- deseq.bbl.data.combined %>%
   mutate(fdr_category = cut(padj,
                             breaks = c(-Inf, 1e-15, 1e-10, 1e-5, 0.05),
