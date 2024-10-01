@@ -75,7 +75,10 @@ query_and_filter_samples <- function(project) {
     barcode = as.list(samples$sample.submitter_id)
   )
   
-  GDCdownload(query_project)
+  # If this is your first time running this notebook (i.e., you have not yet downloaded the results of the query in the previous block), 
+  # uncomment the line below
+  
+  # GDCdownload(query_project)
   
   return (list(samples = samples, query_project = query_project))
 }
@@ -181,7 +184,164 @@ Refer to `1. Exploratory Data Analysis - MSigDB Gene Sets + GTEx TPM.rmd` for mo
 RCDdb <- "data/RCDdb/"
 ```
 
-#### Alkaliptosis
+Write utility functions for filtering the gene sets, performing differential gene expression analysis, and plotting the results.
+
+```{r}
+filter_gene_set_and_perform_dgea <- function(genes) {
+  tcga_rcd <- list()
+
+  for (project in projects) {
+    rownames(genes) <- genes$gene_id
+    tcga_rcd[[project]] <- tcga_matrix[[project]][rownames(tcga_matrix[[project]]) %in% genes$gene_id, ]
+    tcga_rcd[[project]] <- tcga_rcd[[project]][, rownames(samples[[project]])]
+  }
+  
+  dds_rcd <- list()
+  res_rcd <- list()
+  
+  for (project in projects) {
+    print(project)
+    print("=============")
+    dds <- DESeqDataSetFromMatrix(
+      countData = tcga_rcd[[project]],
+      colData = samples[[project]],
+      design = ~type
+    )
+    dds <- filter_genes(dds, min_count = 10)
+    dds$type <- relevel(dds$type, ref = "normal")
+    dds_rcd[[project]] <- DESeq(dds)
+    res_rcd[[project]] <- results(dds_rcd[[project]])
+  }
+  
+  deseq.bbl.data <- list()
+  
+  for (project in projects) {
+    deseq.results <- res_rcd[[project]]
+    deseq.bbl.data[[project]] <- data.frame(
+      row.names = rownames(deseq.results),
+      baseMean = deseq.results$baseMean,
+      log2FoldChange = deseq.results$log2FoldChange,
+      lfcSE = deseq.results$lfcSE,
+      stat = deseq.results$stat,
+      pvalue = deseq.results$pvalue,
+      padj = deseq.results$padj,
+      cancer_type = project,
+      gene_symbol = genes[rownames(deseq.results), "gene"]
+    )
+  }
+  
+  deseq.bbl.data.combined <- bind_rows(deseq.bbl.data)
+  deseq.bbl.data.combined <- dplyr::filter(deseq.bbl.data.combined, abs(log2FoldChange) >= 1.5 & padj < 0.05)
+  
+  return (deseq.bbl.data.combined)
+}
+```
+
+```{r}
+plot_dgea <- function(deseq.bbl.data.combined) {
+  sizes <- c("<10^-15" = 4, "10^-10" = 3, "10^-5" = 2, "0.05" = 1)
+  
+  deseq.bbl.data.combined <- deseq.bbl.data.combined %>%
+  mutate(fdr_category = cut(padj,
+                            breaks = c(-Inf, 1e-15, 1e-10, 1e-5, 0.05),
+                            labels = c("<10^-15", "10^-10", "10^-5", "0.05"),
+                            right = FALSE))
+
+  top_genes <- deseq.bbl.data.combined %>%
+    group_by(cancer_type) %>%
+    mutate(rank = rank(-abs(log2FoldChange))) %>%
+    dplyr::filter(rank <= 10) %>%
+    ungroup()
+  
+  ggplot(top_genes, aes(y=cancer_type, x=gene_symbol, size=fdr_category, fill=log2FoldChange)) +
+      geom_point(alpha=0.5, shape=21, color="black") +
+      scale_size_manual(values = sizes) +
+      scale_fill_gradient2(low = "blue", mid = "white", high = "red", limits = c(min(deseq.bbl.data.combined$log2FoldChange),max(deseq.bbl.data.combined$log2FoldChange))) +
+      theme_minimal() +
+      theme(
+        axis.text.x = element_text(size = 9, angle = 90, hjust = 1)
+      ) +
+      theme(legend.position="bottom") +
+      theme(legend.position = "bottom")+
+      labs(size = "FDR", fill = "log2 FC", y = "Cancer type", x = "Gene")
+}
+```
+
+#### 1. Necroptosis
+
+Fetch the gene set of interest.
+
+```{r}
+genes <- read.csv(paste0(RCDdb, "Necroptosis.csv"))
+genes$gene_id <- cleanid(genes$gene_id)
+genes <- genes[!duplicated(genes[ , c("gene_id")]),]
+genes <- genes[complete.cases(genes), ]
+genes
+```
+Filter the genes to include only those in the gene set of interest, and then perform differential gene expression analysis.
+
+```{r}
+deseq.bbl.data.combined <- filter_gene_set_and_perform_dgea(genes)
+deseq.bbl.data.combined
+```
+
+Plot the results.
+
+```{r, fig.width = 15, fig.height=5}
+plot_dgea(deseq.bbl.data.combined)
+```
+
+#### 2. Ferroptosis
+
+Fetch the gene set of interest.
+
+```{r}
+genes <- read.csv(paste0(RCDdb, "Ferroptosis.csv"))
+genes$gene_id <- cleanid(genes$gene_id)
+genes <- genes[!duplicated(genes[ , c("gene_id")]),]
+genes <- genes[complete.cases(genes), ]
+genes
+```
+
+Filter the genes to include only those in the gene set of interest, and then perform differential gene expression analysis.
+
+```{r}
+deseq.bbl.data.combined <- filter_gene_set_and_perform_dgea(genes)
+deseq.bbl.data.combined
+```
+
+Plot the results.
+
+```{r, fig.width = 15, fig.height=5}
+plot_dgea(deseq.bbl.data.combined)
+```
+
+#### 3. Pyroptosis
+
+Fetch the gene set of interest.
+
+```{r}
+genes <- read.csv(paste0(RCDdb, "Pyroptosis.csv"))
+genes$gene_id <- cleanid(genes$gene_id)
+genes <- genes[!duplicated(genes[ , c("gene_id")]),]
+genes <- genes[complete.cases(genes), ]
+genes
+```
+
+Filter the genes to include only those in the gene set of interest, and then perform differential gene expression analysis.
+
+```{r}
+deseq.bbl.data.combined <- filter_gene_set_and_perform_dgea(genes)
+deseq.bbl.data.combined
+```
+
+Plot the results.
+
+```{r, fig.width = 15, fig.height=5}
+plot_dgea(deseq.bbl.data.combined)
+```
+
+#### 4. Alkaliptosis
 
 Fetch the gene set of interest.
 
@@ -192,84 +352,21 @@ genes <- genes[!duplicated(genes[ , c("gene_id")]),]
 genes <- genes[complete.cases(genes), ]
 genes
 ```
+
 Filter the genes to include only those in the gene set of interest, and then perform differential gene expression analysis.
 
 ```{r}
-tcga_rcd <- list()
-
-for (project in projects) {
-  rownames(genes) <- genes$gene_id
-  tcga_rcd[[project]] <- tcga_matrix[[project]][rownames(tcga_matrix[[project]]) %in% genes$gene_id, ]
-  tcga_rcd[[project]] <- tcga_rcd[[project]][, rownames(samples[[project]])]
-}
-
-dds_rcd <- list()
-res_rcd <- list()
-
-for (project in projects) {
-  print(project)
-  print("=============")
-  dds <- DESeqDataSetFromMatrix(
-    countData = tcga_rcd[[project]],
-    colData = samples[[project]],
-    design = ~type
-  )
-  dds <- filter_genes(dds, min_count = 10)
-  dds$type <- relevel(dds$type, ref = "normal")
-  dds_rcd[[project]] <- DESeq(dds)
-  res_rcd[[project]] <- results(dds_rcd[[project]])
-}
-
-deseq.bbl.data <- list()
-
-for (project in projects) {
-  deseq.results <- res_rcd[[project]]
-  deseq.bbl.data[[project]] <- data.frame(
-    row.names = rownames(deseq.results),
-    baseMean = deseq.results$baseMean,
-    log2FoldChange = deseq.results$log2FoldChange,
-    lfcSE = deseq.results$lfcSE,
-    stat = deseq.results$stat,
-    pvalue = deseq.results$pvalue,
-    padj = deseq.results$padj,
-    cancer_type = project,
-    gene_symbol = genes[rownames(deseq.results), "gene"]
-  )
-}
-
-deseq.bbl.data.combined <- bind_rows(deseq.bbl.data)
+deseq.bbl.data.combined <- filter_gene_set_and_perform_dgea(genes)
 deseq.bbl.data.combined
 ```
 
 Plot the results.
 
-```{r, fig.width=15}
-deseq.bbl.data.combined <- deseq.bbl.data.combined %>%
-  mutate(fdr_category = cut(padj,
-                            breaks = c(-Inf, 1e-15, 1e-10, 1e-5, 0.05),
-                            labels = c("<10^-15", "10^-10", "10^-5", "0.05"),
-                            right = FALSE))
-
-top_genes <- deseq.bbl.data.combined %>%
-  group_by(cancer_type) %>%
-  mutate(rank = rank(-abs(log2FoldChange))) %>%
-  dplyr::filter(rank <= 10) %>%
-  ungroup()
-
-ggplot(top_genes, aes(y=cancer_type, x=gene_symbol, size=fdr_category, fill=log2FoldChange)) +
-    geom_point(alpha=0.5, shape=21, color="black") +
-    scale_size_manual(values = sizes) +
-    scale_fill_gradient2(low = "blue", mid = "white", high = "red", limits = c(min(deseq.bbl.data.combined$log2FoldChange),max(deseq.bbl.data.combined$log2FoldChange))) +
-    theme_minimal() +
-    theme(
-      axis.text.x = element_text(size = 9, angle = 90, hjust = 1)
-    ) +
-    theme(legend.position="bottom") +
-    theme(legend.position = "bottom")+
-    labs(size = "FDR", fill = "log2 FC", y = "Cancer type", x = "Gene")
+```{r, fig.width = 15, fig.height=5}
+plot_dgea(deseq.bbl.data.combined)
 ```
 
-#### Apoptosis
+#### 5. Apoptosis
 
 Fetch the gene set of interest.
 
@@ -284,81 +381,17 @@ genes
 Filter the genes to include only those in the gene set of interest, and then perform differential gene expression analysis.
 
 ```{r}
-tcga_rcd <- list()
-
-for (project in projects) {
-  rownames(genes) <- genes$gene_id
-  tcga_rcd[[project]] <- tcga_matrix[[project]][rownames(tcga_matrix[[project]]) %in% genes$gene_id, ]
-  tcga_rcd[[project]] <- tcga_rcd[[project]][, rownames(samples[[project]])]
-}
-
-dds_rcd <- list()
-res_rcd <- list()
-
-for (project in projects) {
-  print(project)
-  print("=============")
-  dds <- DESeqDataSetFromMatrix(
-    countData = tcga_rcd[[project]],
-    colData = samples[[project]],
-    design = ~type
-  )
-  dds <- filter_genes(dds, min_count = 10)
-  dds$type <- relevel(dds$type, ref = "normal")
-  dds_rcd[[project]] <- DESeq(dds)
-  res_rcd[[project]] <- results(dds_rcd[[project]])
-}
-
-deseq.bbl.data <- list()
-
-for (project in projects) {
-  deseq.results <- res_rcd[[project]]
-  deseq.bbl.data[[project]] <- data.frame(
-    row.names = rownames(deseq.results),
-    baseMean = deseq.results$baseMean,
-    log2FoldChange = deseq.results$log2FoldChange,
-    lfcSE = deseq.results$lfcSE,
-    stat = deseq.results$stat,
-    pvalue = deseq.results$pvalue,
-    padj = deseq.results$padj,
-    cancer_type = project,
-    gene_symbol = genes[rownames(deseq.results), "gene"]
-  )
-}
-
-deseq.bbl.data.combined <- bind_rows(deseq.bbl.data)
+deseq.bbl.data.combined <- filter_gene_set_and_perform_dgea(genes)
 deseq.bbl.data.combined
 ```
 
 Plot the results.
 
-```{r, fig.width=15}
-deseq.bbl.data.combined <- deseq.bbl.data.combined %>%
-  mutate(fdr_category = cut(padj,
-                            breaks = c(-Inf, 1e-15, 1e-10, 1e-5, 0.05),
-                            labels = c("<10^-15", "10^-10", "10^-5", "0.05"),
-                            right = FALSE))
-
-top_genes <- deseq.bbl.data.combined %>%
-  group_by(cancer_type) %>%
-  mutate(rank = rank(-abs(log2FoldChange))) %>%
-  dplyr::filter(rank <= 10) %>%
-  ungroup()
-
-ggplot(top_genes, aes(y=cancer_type, x=gene_symbol, size=fdr_category, fill=log2FoldChange)) +
-    geom_point(alpha=0.5, shape=21, color="black") +
-    scale_size_manual(values = sizes) +
-    scale_fill_gradient2(low = "blue", mid = "white", high = "red", limits = c(min(deseq.bbl.data.combined$log2FoldChange),max(deseq.bbl.data.combined$log2FoldChange))) +
-    theme_minimal() +
-    theme(
-      axis.text.x = element_text(size = 9, angle = 90, hjust = 1)
-    ) +
-    theme(legend.position="bottom") +
-    theme(legend.position = "bottom")+
-    labs(size = "FDR", fill = "log2 FC", y = "Cancer type", x = "Gene")
+```{r, fig.width = 15, fig.height=5}
+plot_dgea(deseq.bbl.data.combined)
 ```
 
-#### Autophagy-Dependent Cell Death
+#### 6. Autophagy-Dependent Cell Death
 
 Fetch the gene set of interest.
 
@@ -373,76 +406,238 @@ genes
 Filter the genes to include only those in the gene set of interest, and then perform differential gene expression analysis.
 
 ```{r}
-tcga_rcd <- list()
-
-for (project in projects) {
-  rownames(genes) <- genes$gene_id
-  tcga_rcd[[project]] <- tcga_matrix[[project]][rownames(tcga_matrix[[project]]) %in% genes$gene_id, ]
-  tcga_rcd[[project]] <- tcga_rcd[[project]][, rownames(samples[[project]])]
-}
-
-dds_rcd <- list()
-res_rcd <- list()
-
-for (project in projects) {
-  print(project)
-  print("=============")
-  dds <- DESeqDataSetFromMatrix(
-    countData = tcga_rcd[[project]],
-    colData = samples[[project]],
-    design = ~type
-  )
-  dds <- filter_genes(dds, min_count = 10)
-  dds$type <- relevel(dds$type, ref = "normal")
-  dds_rcd[[project]] <- DESeq(dds)
-  res_rcd[[project]] <- results(dds_rcd[[project]])
-}
-
-deseq.bbl.data <- list()
-
-for (project in projects) {
-  deseq.results <- res_rcd[[project]]
-  deseq.bbl.data[[project]] <- data.frame(
-    row.names = rownames(deseq.results),
-    baseMean = deseq.results$baseMean,
-    log2FoldChange = deseq.results$log2FoldChange,
-    lfcSE = deseq.results$lfcSE,
-    stat = deseq.results$stat,
-    pvalue = deseq.results$pvalue,
-    padj = deseq.results$padj,
-    cancer_type = project,
-    gene_symbol = genes[rownames(deseq.results), "gene"]
-  )
-}
-
-deseq.bbl.data.combined <- bind_rows(deseq.bbl.data)
+deseq.bbl.data.combined <- filter_gene_set_and_perform_dgea(genes)
 deseq.bbl.data.combined
 ```
 
 Plot the results.
 
-```{r, fig.width=15}
-deseq.bbl.data.combined <- deseq.bbl.data.combined %>%
-  mutate(fdr_category = cut(padj,
-                            breaks = c(-Inf, 1e-15, 1e-10, 1e-5, 0.05),
-                            labels = c("<10^-15", "10^-10", "10^-5", "0.05"),
-                            right = FALSE))
+```{r, fig.width = 15, fig.height=5}
+plot_dgea(deseq.bbl.data.combined)
+```
 
-top_genes <- deseq.bbl.data.combined %>%
-  group_by(cancer_type) %>%
-  mutate(rank = rank(-abs(log2FoldChange))) %>%
-  dplyr::filter(rank <= 10) %>%
-  ungroup()
+#### 7. Cuproptosis
 
-ggplot(top_genes, aes(y=cancer_type, x=gene_symbol, size=fdr_category, fill=log2FoldChange)) +
-    geom_point(alpha=0.5, shape=21, color="black") +
-    scale_size_manual(values = sizes) +
-    scale_fill_gradient2(low = "blue", mid = "white", high = "red", limits = c(min(deseq.bbl.data.combined$log2FoldChange),max(deseq.bbl.data.combined$log2FoldChange))) +
-    theme_minimal() +
-    theme(
-      axis.text.x = element_text(size = 9, angle = 90, hjust = 1)
-    ) +
-    theme(legend.position="bottom") +
-    theme(legend.position = "bottom")+
-    labs(size = "FDR", fill = "log2 FC", y = "Cancer type", x = "Gene")
+Fetch the gene set of interest.
+
+```{r}
+genes <- read.csv(paste0(RCDdb, "Cuproptosis.csv"))
+genes$gene_id <- cleanid(genes$gene_id)
+genes <- genes[!duplicated(genes[ , c("gene_id")]),]
+genes <- genes[complete.cases(genes), ]
+genes
+```
+
+Filter the genes to include only those in the gene set of interest, and then perform differential gene expression analysis.
+
+```{r}
+deseq.bbl.data.combined <- filter_gene_set_and_perform_dgea(genes)
+deseq.bbl.data.combined
+```
+
+Plot the results.
+
+```{r, fig.width = 15, fig.height=5}
+plot_dgea(deseq.bbl.data.combined)
+```
+
+#### 8. Disulfidptosis
+
+Fetch the gene set of interest.
+
+```{r}
+genes <- read.csv(paste0(RCDdb, "Disulfidptosis.csv"))
+genes$gene_id <- cleanid(genes$gene_id)
+genes <- genes[!duplicated(genes[ , c("gene_id")]),]
+genes <- genes[complete.cases(genes), ]
+genes
+```
+
+Filter the genes to include only those in the gene set of interest, and then perform differential gene expression analysis.
+
+```{r}
+deseq.bbl.data.combined <- filter_gene_set_and_perform_dgea(genes)
+deseq.bbl.data.combined
+```
+
+Plot the results.
+
+```{r, fig.width = 15, fig.height=5}
+plot_dgea(deseq.bbl.data.combined)
+```
+
+#### 9. Entotic Cell Death
+
+Fetch the gene set of interest.
+
+```{r}
+genes <- read.csv(paste0(RCDdb, "Entotic_cell_death.csv"))
+genes$gene_id <- cleanid(genes$gene_id)
+genes <- genes[!duplicated(genes[ , c("gene_id")]),]
+genes <- genes[complete.cases(genes), ]
+genes
+```
+
+Filter the genes to include only those in the gene set of interest, and then perform differential gene expression analysis.
+
+```{r}
+deseq.bbl.data.combined <- filter_gene_set_and_perform_dgea(genes)
+deseq.bbl.data.combined
+```
+
+Plot the results.
+
+```{r, fig.width = 15, fig.height=5}
+plot_dgea(deseq.bbl.data.combined)
+```
+
+#### 10. Immunogenic Cell Death
+
+Fetch the gene set of interest.
+
+```{r}
+genes <- read.csv(paste0(RCDdb, "Immunogenic_cell_death.csv"))
+genes$gene_id <- cleanid(genes$gene_id)
+genes <- genes[!duplicated(genes[ , c("gene_id")]),]
+genes <- genes[complete.cases(genes), ]
+genes
+```
+
+Filter the genes to include only those in the gene set of interest, and then perform differential gene expression analysis.
+
+```{r}
+deseq.bbl.data.combined <- filter_gene_set_and_perform_dgea(genes)
+deseq.bbl.data.combined
+```
+
+Plot the results.
+
+```{r, fig.width = 15, fig.height=5}
+plot_dgea(deseq.bbl.data.combined)
+```
+
+#### 11. Lysosome-Dependent Cell Death
+
+Fetch the gene set of interest.
+
+```{r}
+genes <- read.csv(paste0(RCDdb, "Lysosome_dependent_cell_death.csv"))
+genes$gene_id <- cleanid(genes$gene_id)
+genes <- genes[!duplicated(genes[ , c("gene_id")]),]
+genes <- genes[complete.cases(genes), ]
+genes
+```
+
+Filter the genes to include only those in the gene set of interest, and then perform differential gene expression analysis.
+
+```{r}
+deseq.bbl.data.combined <- filter_gene_set_and_perform_dgea(genes)
+deseq.bbl.data.combined
+```
+
+Plot the results.
+
+```{r, fig.width = 15, fig.height=5}
+plot_dgea(deseq.bbl.data.combined)
+```
+
+#### 12. MPT-Driven Necrosis
+
+Fetch the gene set of interest.
+
+```{r}
+genes <- read.csv(paste0(RCDdb, "MPT_driven_necrosis.csv"))
+genes$gene_id <- cleanid(genes$gene_id)
+genes <- genes[!duplicated(genes[ , c("gene_id")]),]
+genes <- genes[complete.cases(genes), ]
+genes
+```
+
+Filter the genes to include only those in the gene set of interest, and then perform differential gene expression analysis.
+
+```{r}
+deseq.bbl.data.combined <- filter_gene_set_and_perform_dgea(genes)
+deseq.bbl.data.combined
+```
+
+Plot the results.
+
+```{r, fig.width = 15, fig.height=5}
+plot_dgea(deseq.bbl.data.combined)
+```
+
+#### 13. NETotic Cell Death
+
+Fetch the gene set of interest.
+
+```{r}
+genes <- read.csv(paste0(RCDdb, "NETotic_cell_death.csv"))
+genes$gene_id <- cleanid(genes$gene_id)
+genes <- genes[!duplicated(genes[ , c("gene_id")]),]
+genes <- genes[complete.cases(genes), ]
+genes
+```
+
+Filter the genes to include only those in the gene set of interest, and then perform differential gene expression analysis.
+
+```{r}
+deseq.bbl.data.combined <- filter_gene_set_and_perform_dgea(genes)
+deseq.bbl.data.combined
+```
+
+Plot the results.
+
+```{r, fig.width = 15, fig.height=5}
+plot_dgea(deseq.bbl.data.combined)
+```
+
+#### 14. Oxeiptosis
+
+Fetch the gene set of interest.
+
+```{r}
+genes <- read.csv(paste0(RCDdb, "Oxeiptosis.csv"))
+genes$gene_id <- cleanid(genes$gene_id)
+genes <- genes[!duplicated(genes[ , c("gene_id")]),]
+genes <- genes[complete.cases(genes), ]
+genes
+```
+
+Filter the genes to include only those in the gene set of interest, and then perform differential gene expression analysis.
+
+```{r}
+deseq.bbl.data.combined <- filter_gene_set_and_perform_dgea(genes)
+deseq.bbl.data.combined
+```
+
+Plot the results.
+
+```{r, fig.width = 15, fig.height=5}
+plot_dgea(deseq.bbl.data.combined)
+```
+
+
+#### 15. Parthanatos
+
+Fetch the gene set of interest.
+
+```{r}
+genes <- read.csv(paste0(RCDdb, "Parthanatos.csv"))
+genes$gene_id <- cleanid(genes$gene_id)
+genes <- genes[!duplicated(genes[ , c("gene_id")]),]
+genes <- genes[complete.cases(genes), ]
+genes
+```
+
+Filter the genes to include only those in the gene set of interest, and then perform differential gene expression analysis.
+
+```{r}
+deseq.bbl.data.combined <- filter_gene_set_and_perform_dgea(genes)
+deseq.bbl.data.combined
+```
+
+Plot the results.
+
+```{r, fig.width = 15, fig.height=5}
+plot_dgea(deseq.bbl.data.combined)
 ```
