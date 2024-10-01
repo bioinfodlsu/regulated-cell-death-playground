@@ -330,7 +330,7 @@ deseq.bbl.data
 Filter based on p-value and log fold change cutoffs.
 
 ```{r}
-deseq.bbl.data.filtered <- dplyr::filter(deseq.bbl.data, abs(log2FoldChange) >= 1.5 & pvalue < 0.05)
+deseq.bbl.data.filtered <- dplyr::filter(deseq.bbl.data, abs(log2FoldChange) >= 1.5 & padj < 0.05)
 deseq.bbl.data.filtered
 ```
 
@@ -436,7 +436,7 @@ deseq.bbl.data
 Filter based on p-value and log fold change cutoffs.
 
 ```{r}
-deseq.bbl.data.filtered <- dplyr::filter(deseq.bbl.data, abs(log2FoldChange) >= 1.5 & pvalue < 0.05)
+deseq.bbl.data.filtered <- dplyr::filter(deseq.bbl.data, abs(log2FoldChange) >= 1.5 & padj < 0.05)
 deseq.bbl.data.filtered
 ```
 
@@ -544,7 +544,7 @@ deseq.bbl.data
 Filter based on p-value and log fold change cutoffs.
 
 ```{r}
-deseq.bbl.data.filtered <- dplyr::filter(deseq.bbl.data, abs(log2FoldChange) >= 1.5 & pvalue < 0.05)
+deseq.bbl.data.filtered <- dplyr::filter(deseq.bbl.data, abs(log2FoldChange) >= 1.5 & padj < 0.05)
 deseq.bbl.data.filtered
 ```
 
