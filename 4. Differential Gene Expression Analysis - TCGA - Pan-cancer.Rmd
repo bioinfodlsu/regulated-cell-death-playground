@@ -241,6 +241,7 @@ for (project in projects) {
 }
 
 deseq.bbl.data.combined <- bind_rows(deseq.bbl.data)
+deseq.bbl.data.combined <- dplyr::filter(deseq.bbl.data.combined, abs(log2FoldChange) >= 1.5 & padj < 0.05)
 deseq.bbl.data.combined
 ```
 
@@ -336,6 +337,7 @@ for (project in projects) {
 }
 
 deseq.bbl.data.combined <- bind_rows(deseq.bbl.data)
+deseq.bbl.data.combined <- dplyr::filter(deseq.bbl.data.combined, abs(log2FoldChange) >= 1.5 & padj < 0.05)
 deseq.bbl.data.combined
 ```
 
@@ -431,6 +433,7 @@ for (project in projects) {
 }
 
 deseq.bbl.data.combined <- bind_rows(deseq.bbl.data)
+deseq.bbl.data.combined <- dplyr::filter(deseq.bbl.data.combined, abs(log2FoldChange) >= 1.5 & padj < 0.05)
 deseq.bbl.data.combined
 ```
 Plot the results.
