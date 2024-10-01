@@ -75,7 +75,10 @@ query_and_filter_samples <- function(project) {
     barcode = as.list(samples$sample.submitter_id)
   )
   
-  GDCdownload(query_project)
+  # If this is your first time running this notebook (i.e., you have not yet downloaded the results of the query in the previous block), 
+  # uncomment the line below
+  
+  # GDCdownload(query_project)
   
   return (list(samples = samples, query_project = query_project))
 }
