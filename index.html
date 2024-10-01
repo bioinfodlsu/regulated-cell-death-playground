@@ -200,7 +200,97 @@
 
           <tr>
             <td>
-              Differential Gene Expression Analysis <br />
+              <b class="text-danger">NEW (10/01/2024)!</b> Differential Gene
+              Expression Analysis <br />
+              Pan-Cancer
+              <br />
+              Necroptosis, Ferroptosis & Pyroptosis
+            </td>
+            <td>
+              <ol style="margin-left: -1em">
+                <li>
+                  Download RNA-seq data from
+                  <b
+                    ><a
+                      href="https://www.cancer.gov/ccg/research/genome-sequencing/tcga"
+                      >The Cancer Genome Atlas (TCGA)</a
+                    ></b
+                  >.
+                </li>
+                <li>
+                  Filter data to include normal and malignant pairs from
+                  <b>multiple TCGA studies</b>.
+                </li>
+                <li>
+                  Download RCD gene sets from the
+                  <b
+                    ><a
+                      href="https://www.gsea-msigdb.org/gsea/msigdb/collections.jsp"
+                      >Human MSigDB Collections</a
+                    ></b
+                  >:
+                  <ul>
+                    <li>
+                      Necroptosis: From
+                      <a
+                        href="https://www.gsea-msigdb.org/gsea/msigdb/human/geneset/GOBP_NECROPTOTIC_SIGNALING_PATHWAY.html"
+                        >Gene Ontology</a
+                      >
+                    </li>
+                    <li>
+                      Ferroptosis: From
+                      <a
+                        href="https://www.gsea-msigdb.org/gsea/msigdb/human/geneset/WP_FERROPTOSIS.html"
+                        >WikiPathways</a
+                      >
+                    </li>
+                    <li>
+                      Pyroptosis: From
+                      <a
+                        href="https://www.gsea-msigdb.org/gsea/msigdb/human/geneset/REACTOME_PYROPTOSIS.html"
+                        >Reactome</a
+                      >
+                    </li>
+                  </ul>
+                </li>
+                <li>
+                  For each RCD type:
+                  <ul>
+                    <li>
+                      Filter the count matrix to include only genes related to
+                      the RCD type of interest.
+                    </li>
+                    <li>
+                      Perform differential gene expression analysis using
+                      <a
+                        href="https://bioconductor.org/packages/release/bioc/html/DESeq2.html"
+                        ><b>DESeq2</b></a
+                      >.
+                    </li>
+                  </ul>
+                </li>
+              </ol>
+            </td>
+            <td>
+              <a
+                href="4. Differential Gene Expression Analysis - TCGA - Pan-cancer.nb.html"
+                target="_blank"
+                >Results</a
+              >
+            </td>
+            <td>
+              <a
+                href="https://github.com/bioinfodlsu/rcd-playground/blob/main/4.%20Differential%20Gene%20Expression%20Analysis%20-%20TCGA%20-%20Pan-cancer.Rmd"
+                target="_blank"
+                >Code</a
+              >
+            </td>
+          </tr>
+
+          <tr>
+            <td>
+              <b class="text-danger">NEW (10/01/2024)!</b> Differential Gene
+              Expression Analysis <br />
               Pan-Cancer
               <br />
               Multiple RCD Types (Including NETosis, Cuproptosis, etc.)
