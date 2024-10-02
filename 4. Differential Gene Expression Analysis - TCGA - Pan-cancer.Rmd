@@ -1,5 +1,7 @@
 ---
-title: "Differential Gene Expression Analysis - TCGA - Pan-cancer"
+title: "Differential Gene Expression Analysis"
+subtitle: "Pan-cancer | Necroptosis, Ferroptosis & Pyroptosis"
+author: Kim Williame Lee, Mark Edward M. Gonzales & Dr. Anish M.S. Shrestha
 output: html_notebook
 ---
 
@@ -88,7 +90,7 @@ Download the TCGA gene expression data for different cancer types.
 
 Refer to this link for the list of TCGA cancer type abbreviations: https://gdc.cancer.gov/resources-tcga-users/tcga-code-tables/tcga-study-abbreviations
 
-```{r}
+```{r, message=FALSE}
 projects <- c("TCGA-LUSC", "TCGA-COAD", "TCGA-KICH", "TCGA-KIRC", "TCGA-PRAD",
               "TCGA-BRCA", "TCGA-HNSC", "TCGA-KIRP", "TCGA-LIHC", "TCGA-STAD",
               "TCGA-THCA", "TCGA-BLCA", "TCGA-LUAD", "TCGA-ESCA")
@@ -111,12 +113,17 @@ Running the code block above should generate and populate a directory named `GDC
 
 Construct the RNA-seq count matrix for each cancer type.
 
-```{r}
+```{r, echo = TRUE, message = FALSE, results="hide"}
 tcga_data <- list()
 tcga_matrix <- list()
 
 for (project in projects) {
   tcga_data[[project]] <- GDCprepare(project_data[[project]], summarizedExperiment = TRUE)
+}
+```
+
+```{r}
+for (project in projects) {
   count_matrix <- assay(tcga_data[[project]], "unstranded")
   
   # Remove duplicate entries
@@ -143,7 +150,7 @@ for (project in projects) {
 
 DESeq2 requires the row names of `samples` should be identical to the column names of `count_matrix`.
 
-```{r}
+```{r, echo = TRUE, results="hide"}
 for (project in projects) {
   colnames(tcga_matrix[[project]]) <- gsub(x = colnames(tcga_matrix[[project]]), pattern = "\\.", replacement = "-")
   tcga_matrix[[project]] <- tcga_matrix[[project]][, rownames(samples[[project]])]
@@ -187,11 +194,11 @@ Fetch the necroptosis gene set.
 ```{r}
 necroptosis.genes <- msigdbr(species = "human", category = "C5", subcategory = "GO:BP") %>%
   dplyr::filter(gs_name == "GOBP_NECROPTOTIC_SIGNALING_PATHWAY")
-head(necroptosis.genes)
+necroptosis.genes
 ```
 Filter the genes to include only those in the necroptosis gene set.
 
-```{r}
+```{r, echo = TRUE, results="hide"}
 tcga_necroptosis <- list()
 
 for (project in projects) {
@@ -211,6 +218,9 @@ dds_necroptosis <- list()
 res_necroptosis <- list()
 
 for (project in projects) {
+  print(project)
+  print("=============")
+    
   dds <- DESeqDataSetFromMatrix(
     countData = tcga_necroptosis[[project]],
     colData = samples[[project]],
@@ -285,12 +295,12 @@ Fetch the ferroptosis gene set.
 ```{r}
 ferroptosis.genes <- msigdbr(species = "human", category = "C2", subcategory = "CP:WIKIPATHWAYS") %>%
   dplyr::filter(gs_name == "WP_FERROPTOSIS")
-head(ferroptosis.genes)
+ferroptosis.genes
 ```
 
 Filter the genes to include only those in the ferroptosis gene set.
 
-```{r}
+```{r, echo = TRUE, results="hide"}
 tcga_ferroptosis <- list()
 
 for (project in projects) {
@@ -309,6 +319,9 @@ dds_ferroptosis <- list()
 res_ferroptosis <- list()
 
 for (project in projects) {
+  print(project)
+  print("=============")
+  
   dds <- DESeqDataSetFromMatrix(
     countData = tcga_ferroptosis[[project]],
     colData = samples[[project]],
@@ -381,12 +394,12 @@ Fetch the pyroptosis gene set.
 ```{r}
 pyroptosis.genes <- msigdbr(species = "human", category = "C2", subcategory = "CP:REACTOME") %>%
   dplyr::filter(gs_name == "REACTOME_PYROPTOSIS")
-head(pyroptosis.genes)
+pyroptosis.genes
 ```
 
 Filter the genes to include only those in the pyroptosis gene set.
 
-```{r}
+```{r, echo = TRUE, results="hide"}
 tcga_pyroptosis <- list()
 
 for (project in projects) {
@@ -405,6 +418,9 @@ dds_pyroptosis <- list()
 res_pyroptosis <- list()
 
 for (project in projects) {
+  print(project)
+  print("=============")
+  
   dds <- DESeqDataSetFromMatrix(
     countData = tcga_pyroptosis[[project]],
     colData = samples[[project]],
