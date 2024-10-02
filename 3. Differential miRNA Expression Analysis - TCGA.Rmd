@@ -349,7 +349,7 @@ ggplot(deseq.bbl.data.filtered, aes(x = cancer_type, y = rownames(deseq.bbl.data
   theme_minimal() +
   theme(legend.position = "bottom") +
   theme(legend.position = "bottom") +
-  labs(size = "FDR", fill = "log2 FC", x = "Cancer type", y = "miRNA")
+  labs(size = "Adjusted p-value", fill = "log2 FC", x = "Cancer type", y = "miRNA")
 ```
 #### Ferroptosis
 
@@ -455,7 +455,7 @@ ggplot(deseq.bbl.data.filtered, aes(x = cancer_type, y = rownames(deseq.bbl.data
   theme_minimal() +
   theme(legend.position = "bottom") +
   theme(legend.position = "bottom") +
-  labs(size = "FDR", fill = "log2 FC", x = "Cancer type", y = "miRNA")
+  labs(size = "Adjusted p-value", fill = "log2 FC", x = "Cancer type", y = "miRNA")
 ```
 
 #### Pyroptosis
@@ -564,5 +564,5 @@ ggplot(deseq.bbl.data.filtered, aes(x = cancer_type, y = rownames(deseq.bbl.data
   theme_minimal() +
   theme(legend.position = "bottom") +
   theme(legend.position = "bottom") +
-  labs(size = "FDR", fill = "log2 FC", x = "Cancer type", y = "miRNA")
+  labs(size = "Adjusted p-value", fill = "log2 FC", x = "Cancer type", y = "miRNA")
 ```
