@@ -22,3 +22,5 @@ If you want to replicate the analyses:
 
 - **Dr. Anish M.S. Shrestha** <br>
   anish.shrestha@dlsu.edu.ph
+
+This is part of the **"Investigating regulated necrotic cell death in colorectal cancer using a multi-omics approach"** project funded by the [Department of Science and Technology &ndash; Philippine Council for Health Research and Development](https://www.pchrd.dost.gov.ph/) (DOST-PCHRD). This project is led by Dr. Rafael A. Espiritu of the Department of Chemistry, College of Science, De La Salle University.
