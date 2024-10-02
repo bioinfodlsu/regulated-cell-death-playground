@@ -1,5 +1,5 @@
 ---
-title: "Exploratory Data Analysis - MSigDB Gene Sets + GTEx TPM"
+title: "Exploratory Data Analysis"
 output: html_notebook
 ---
 
@@ -7,7 +7,7 @@ output: html_notebook
 
 ### Loading libraries
 
-```{r}
+```{r, warning=FALSE, message=FALSE}
 library("tidyverse")
 library("tibble")
 library("msigdbr")
@@ -50,19 +50,19 @@ The `DTHHRDY` column refers to the 4-point Hardy scale: https://www.ncbi.nlm.nih
 Refer to the metadata files here for more information: https://gtexportal.org/home/downloads/adult-gtex/metadata
 
 ```{r}
-head(subject.df)
+subject.df
 ```
 Refer to the metadata files here for more information: https://gtexportal.org/home/downloads/adult-gtex/metadata
 
 ```{r}
-head(sample.df)
+sample.df
 ```
 
 Extract entries that pertain to transcriptomic (RNA) data.
 
 ```{r}
 rnaseq.sample.df <- sample.df[sample.df["SMAFRZE"] == "RNASEQ", ]
-head(rnaseq.sample.df)
+rnaseq.sample.df
 ```
 
 ## III. Filtering colon samples
@@ -76,7 +76,7 @@ We are only interested in those from the colorectal area.
 
 ```{r}
 colon.sample.df <- rnaseq.sample.df %>% dplyr::filter(SMTSD == "Colon - Sigmoid")
-head(colon.sample.df)
+colon.sample.df
 ```
 
 ## IV. Loading TPM data from GTEx
@@ -135,7 +135,7 @@ CAVEAT! `GOBP_NECROPTOTIC_SIGNALING_PATHWAY` contains only 8 genes.
 ```{r}
 necroptosis.genes <- msigdbr(species = "human", category = "C5", subcategory = "GO:BP") %>%
   dplyr::filter(gs_name == "GOBP_NECROPTOTIC_SIGNALING_PATHWAY")
-head(necroptosis.genes)
+necroptosis.genes
 ```
 
 ### Ferroptosis
@@ -153,7 +153,7 @@ However, it contains only 10 genes (for comparison, `WP_FERROPTOSIS` contains 64
 ```{r}
 ferroptosis.genes <- msigdbr(species = "human", category = "C2", subcategory = "CP:WIKIPATHWAYS") %>%
   dplyr::filter(gs_name == "WP_FERROPTOSIS")
-head(ferroptosis.genes)
+ferroptosis.genes
 ```
 
 ### Pyroptosis
@@ -170,7 +170,7 @@ We obtain the gene set from the Human MSigDB Collections:
 ```{r}
 pyroptosis.genes <- msigdbr(species = "human", category = "C2", subcategory = "CP:REACTOME") %>%
   dplyr::filter(gs_name == "REACTOME_PYROPTOSIS")
-head(pyroptosis.genes)
+pyroptosis.genes
 ```
 
 ## VI. Exploratory Data Analysis
