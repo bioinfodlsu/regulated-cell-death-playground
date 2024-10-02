@@ -1,5 +1,6 @@
 ---
 title: "Exploratory Data Analysis"
+author: Kim Williame Lee, Mark Edward M. Gonzales & Dr. Anish M.S. Shrestha
 output: html_notebook
 ---
 
