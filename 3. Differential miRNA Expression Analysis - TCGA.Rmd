@@ -1,7 +1,9 @@
 ---
 title: "Differential miRNA Expression Analysis"
 subtitle: "Colorectal Cancer | Necroptosis, Ferroptosis & Pyroptosis"
-author: Mark Edward M. Gonzales & Dr. Anish M.S. Shrestha
+author: 
+  - Mark Edward M. Gonzales^[De La Salle University, Manila, Philippines, gonzales.markedward@gmail.com]
+  - Dr. Anish M.S. Shrestha^[De La Salle University, Manila, Philippines, anish.shrestha@dlsu.edu.ph]
 output: html_notebook
 ---
 
