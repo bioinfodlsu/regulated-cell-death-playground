@@ -12,7 +12,7 @@ output: html_notebook
 
 ### Loading libraries
 
-```{r}
+```{r, warning=FALSE, message=FALSE}
 library("tidyverse")
 library("tibble")
 library("msigdbr")
