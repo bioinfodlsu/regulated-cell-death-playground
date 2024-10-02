@@ -30,7 +30,7 @@ library("biomaRt")
 Download miRNA expression data from The Cancer Genome Atlas (TCGA):
 - `TCGA-COAD` refers to the biospecimen data for colon adenocarcinoma.
 
-```{r}
+```{r, message=FALSE}
 query_tumor <- GDCquery(
   project = "TCGA-COAD",
   data.category = "Transcriptome Profiling",
@@ -43,7 +43,7 @@ tumor <- getResults(query_tumor)
 tumor
 ```
 
-```{r}
+```{r, message=FALSE}
 query_normal <- GDCquery(
   project = "TCGA-COAD",
   data.category = "Transcriptome Profiling",
@@ -57,7 +57,7 @@ normal
 ```
 Consider only samples with both normal and malignant tissues.
 
-```{r}
+```{r, message=FALSE}
 submitter_ids <- inner_join(tumor, normal, by = "cases.submitter_id") %>%
   dplyr::select(cases.submitter_id)
 tumor <- tumor %>%
@@ -66,7 +66,7 @@ normal <- normal %>%
   dplyr::filter(cases.submitter_id %in% submitter_ids$cases.submitter_id)
 
 samples <- rbind(tumor, normal)
-unique(samples$sample_type)
+invisible(unique(samples$sample_type))
 samples
 ```
 
@@ -74,7 +74,7 @@ Download only samples with both normal and malignant tissues.
 
 To impose this filtering, we set the `barcode` argument of `GDCquery` to `samples$sample.submitter_id` (which was generated in the previous cell).
 
-```{r}
+```{r, message=FALSE}
 query_coad <- GDCquery(
   project = "TCGA-COAD",
   data.category = "Transcriptome Profiling",
@@ -87,7 +87,7 @@ query_coad <- GDCquery(
 ```
 If this is your first time running this notebook (i.e., you have not yet downloaded the results of the query in the previous block), uncomment the code block below.
 
-```{r}
+```{r, message=FALSE}
 # GDCdownload(query_coad)
 ```
 
@@ -97,8 +97,11 @@ Running the code block above should generate and populate a directory named `GDC
 
 Construct the RNA-seq count matrix.
 
-```{r}
+```{r, echo = TRUE, results="hide"}
 tcga_coad_data <- GDCprepare(query_coad, summarizedExperiment = TRUE)
+```
+
+```{r}
 rownames(tcga_coad_data) <- tcga_coad_data$miRNA_ID
 count_matrix <- tcga_coad_data[, colnames(tcga_coad_data)[grep("count", colnames(tcga_coad_data))]]
 colnames(count_matrix) <- gsub("read_count_", "", colnames(count_matrix))
@@ -110,7 +113,7 @@ count_matrix <- data.matrix(count_matrix_df)
 rownames(count_matrix) <- cleanid(rownames(count_matrix))
 count_matrix <- count_matrix[!(duplicated(rownames(count_matrix)) | duplicated(rownames(count_matrix), fromLast = TRUE)), ]
 
-head(count_matrix)
+head(count_matrix[1:5, 1:4])
 ```
 Format the `samples` table so that it can be fed as input to DESeq2.
 
@@ -124,7 +127,7 @@ samples$type <- str_replace(samples$type, "Primary Tumor", "tumor")
 
 DESeq2 requires the row names of `samples` should be identical to the column names of `count_matrix`.
 
-```{r}
+```{r, echo = TRUE, results="hide"}
 colnames(count_matrix) <- gsub(x = colnames(count_matrix), pattern = "\\.", replacement = "-")
 count_matrix <- count_matrix[, rownames(samples)]
 
@@ -167,7 +170,7 @@ Display quality control (QC) plots (refer to https://cran.r-project.org/web/pack
   
 **CAVEAT:** There seem to be some outliers — but we defer handling them for now!
 
-```{r}
+```{r, message=FALSE}
 plot_total_counts(dds)
 plot_library_complexity(dds)
 plot_gene_detection(dds)
@@ -245,7 +248,7 @@ Fetch the necroptosis gene set.
 ```{r}
 necroptosis.genes <- msigdbr(species = "human", category = "C5", subcategory = "GO:BP") %>%
   dplyr::filter(gs_name == "GOBP_NECROPTOTIC_SIGNALING_PATHWAY")
-head(necroptosis.genes)
+necroptosis.genes
 ```
 
 Get the gene symbols of the genes included in the necroptosis gene set, and convert them to RefSeq IDs.
@@ -253,12 +256,12 @@ Get the gene symbols of the genes included in the necroptosis gene set, and conv
 ```{r}
 rcd_gene_symbols <- necroptosis.genes$gene_symbol
 rcd_refseq <- getBM(attributes = c("refseq_mrna", "hgnc_symbol"), filters = "hgnc_symbol", values = rcd_gene_symbols, mart = mart)
-head(rcd_refseq)
+rcd_refseq
 ```
 
 Write the RefSeq IDs of the mRNAs of interest to a file.
 
-```{r}
+```{r, echo = TRUE, results="hide"}
 rcd_mrna_file <- "temp/necroptosis-genes-refseq.txt"
 rcd_refseq.unique_ids <- unique(unlist(rcd_refseq$refseq_mrna))
 rcd_refseq.unique_ids <- rcd_refseq.unique_ids[!sapply(rcd_refseq.unique_ids, identical, "")]
@@ -287,7 +290,7 @@ necroptosis.mirna <- unique(unlist(necroptosis.mirna$V1))
 
 Filter the genes to include only those in the necroptosis gene set.
 
-```{r}
+```{r, echo = TRUE, results="hide"}
 coad_necroptosis <- count_matrix[rownames(count_matrix) %in% necroptosis.mirna, ]
 coad_necroptosis <- coad_necroptosis[, rownames(samples)]
 
@@ -353,7 +356,7 @@ Fetch the ferroptosis gene set.
 ```{r}
 ferroptosis.genes <- msigdbr(species = "human", category = "C2", subcategory = "CP:WIKIPATHWAYS") %>%
   dplyr::filter(gs_name == "WP_FERROPTOSIS")
-head(ferroptosis.genes)
+ferroptosis.genes
 ```
 
 Get the gene symbols of the genes included in the ferroptosis gene set, and convert them to RefSeq IDs.
@@ -361,12 +364,12 @@ Get the gene symbols of the genes included in the ferroptosis gene set, and conv
 ```{r}
 rcd_gene_symbols <- ferroptosis.genes$gene_symbol
 rcd_refseq <- getBM(attributes = c("refseq_mrna", "hgnc_symbol"), filters = "hgnc_symbol", values = rcd_gene_symbols, mart = mart)
-head(rcd_refseq)
+rcd_refseq
 ```
 
 Write the RefSeq IDs of the mRNAs of interest to a file.
 
-```{r}
+```{r, echo = TRUE, results="hide"}
 rcd_mrna_file <- "temp/ferroptosis-genes-refseq.txt"
 rcd_refseq.unique_ids <- unique(unlist(rcd_refseq$refseq_mrna))
 rcd_refseq.unique_ids <- rcd_refseq.unique_ids[!sapply(rcd_refseq.unique_ids, identical, "")]
@@ -395,7 +398,7 @@ ferroptosis.mirna <- unique(unlist(ferroptosis.mirna$V1))
 
 Filter the genes to include only those in the ferroptosis gene set.
 
-```{r}
+```{r, echo = TRUE, results="hide"}
 coad_ferroptosis <- count_matrix[rownames(count_matrix) %in% ferroptosis.mirna, ]
 coad_ferroptosis <- coad_ferroptosis[, rownames(samples)]
 
@@ -460,7 +463,7 @@ Fetch the pyroptosis gene set.
 ```{r}
 pyroptosis.genes <- msigdbr(species = "human", category = "C2", subcategory = "CP:REACTOME") %>%
   dplyr::filter(gs_name == "REACTOME_PYROPTOSIS")
-head(pyroptosis.genes)
+pyroptosis.genes
 ```
 
 Get the gene symbols of the genes included in the pyroptosis gene set, and convert them to RefSeq IDs.
@@ -468,11 +471,11 @@ Get the gene symbols of the genes included in the pyroptosis gene set, and conve
 ```{r}
 rcd_gene_symbols <- pyroptosis.genes$gene_symbol
 rcd_refseq <- getBM(attributes = c("refseq_mrna", "hgnc_symbol"), filters = "hgnc_symbol", values = rcd_gene_symbols, mart = mart)
-head(rcd_refseq)
+rcd_refseq
 ```
 Write the RefSeq IDs of the mRNAs of interest to a file.
 
-```{r}
+```{r, echo = TRUE, results="hide"}
 rcd_mrna_file <- "temp/pyroptosis-genes-refseq.txt"
 rcd_refseq.unique_ids <- unique(unlist(rcd_refseq$refseq_mrna))
 rcd_refseq.unique_ids <- rcd_refseq.unique_ids[!sapply(rcd_refseq.unique_ids, identical, "")]
@@ -502,7 +505,7 @@ pyroptosis.mirna <- unique(unlist(pyroptosis.mirna$V1))
 
 Filter the genes to include only those in the pyroptosis gene set.
 
-```{r}
+```{r, echo = TRUE, results="hide"}
 coad_pyroptosis <- count_matrix[rownames(count_matrix) %in% pyroptosis.mirna, ]
 coad_pyroptosis <- coad_pyroptosis[, rownames(samples)]
 
