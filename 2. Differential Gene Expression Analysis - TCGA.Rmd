@@ -1,5 +1,6 @@
 ---
-title: "Differential Gene Expression Analysis - TCGA"
+title: "Differential Gene Expression Analysis"
+subtitle: "Colorectal Cancer | Necroptosis, Ferroptosis & Pyroptosis"
 author: Kim Williame Lee, Mark Edward M. Gonzales & Dr. Anish M.S. Shrestha
 output: html_notebook
 ---
@@ -226,7 +227,7 @@ Fetch the necroptosis gene set.
 ```{r}
 necroptosis.genes <- msigdbr(species = "human", category = "C5", subcategory = "GO:BP") %>%
   dplyr::filter(gs_name == "GOBP_NECROPTOTIC_SIGNALING_PATHWAY")
-head(necroptosis.genes)
+necroptosis.genes
 ```
 Filter the genes to include only those in the necroptosis gene set.
 
@@ -291,7 +292,7 @@ Fetch the ferroptosis gene set.
 ```{r}
 ferroptosis.genes <- msigdbr(species = "human", category = "C2", subcategory = "CP:WIKIPATHWAYS") %>%
   dplyr::filter(gs_name == "WP_FERROPTOSIS")
-head(ferroptosis.genes)
+ferroptosis.genes
 ```
 
 Filter the genes to include only those in the ferroptosis gene set.
@@ -354,7 +355,7 @@ Fetch the pyroptosis gene set.
 ```{r}
 pyroptosis.genes <- msigdbr(species = "human", category = "C2", subcategory = "CP:REACTOME") %>%
   dplyr::filter(gs_name == "REACTOME_PYROPTOSIS")
-head(pyroptosis.genes)
+pyroptosis.genes
 ```
 
 Filter the genes to include only those in the pyroptosis gene set.
