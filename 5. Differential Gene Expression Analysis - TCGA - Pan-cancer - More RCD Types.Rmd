@@ -283,8 +283,8 @@ Fetch the gene set of interest.
 ```{r}
 genes <- read.csv(paste0(RCDdb, "Necroptosis.csv"))
 genes$gene_id <- cleanid(genes$gene_id)
-genes <- genes[!duplicated(genes[ , c("gene_id")]),]
-genes <- genes[complete.cases(genes), ]
+genes <- distinct(genes, gene_id, .keep_all = TRUE)
+genes <- subset(genes, gene_id != "")
 genes
 ```
 Filter the genes to include only those in the gene set of interest, and then perform differential gene expression analysis.
@@ -307,8 +307,8 @@ Fetch the gene set of interest.
 ```{r}
 genes <- read.csv(paste0(RCDdb, "Ferroptosis.csv"))
 genes$gene_id <- cleanid(genes$gene_id)
-genes <- genes[!duplicated(genes[ , c("gene_id")]),]
-genes <- genes[complete.cases(genes), ]
+genes <- distinct(genes, gene_id, .keep_all = TRUE)
+genes <- subset(genes, gene_id != "")
 genes
 ```
 
@@ -332,8 +332,8 @@ Fetch the gene set of interest.
 ```{r}
 genes <- read.csv(paste0(RCDdb, "Pyroptosis.csv"))
 genes$gene_id <- cleanid(genes$gene_id)
-genes <- genes[!duplicated(genes[ , c("gene_id")]),]
-genes <- genes[complete.cases(genes), ]
+genes <- distinct(genes, gene_id, .keep_all = TRUE)
+genes <- subset(genes, gene_id != "")
 genes
 ```
 
@@ -357,8 +357,8 @@ Fetch the gene set of interest.
 ```{r}
 genes <- read.csv(paste0(RCDdb, "Alkaliptosis.csv"))
 genes$gene_id <- cleanid(genes$gene_id)
-genes <- genes[!duplicated(genes[ , c("gene_id")]),]
-genes <- genes[complete.cases(genes), ]
+genes <- distinct(genes, gene_id, .keep_all = TRUE)
+genes <- subset(genes, gene_id != "")
 genes
 ```
 
@@ -382,8 +382,8 @@ Fetch the gene set of interest.
 ```{r}
 genes <- read.csv(paste0(RCDdb, "Apoptosis.csv"))
 genes$gene_id <- cleanid(genes$gene_id)
-genes <- genes[!duplicated(genes[ , c("gene_id")]),]
-genes <- genes[complete.cases(genes), ]
+genes <- distinct(genes, gene_id, .keep_all = TRUE)
+genes <- subset(genes, gene_id != "")
 genes
 ```
 
@@ -407,8 +407,8 @@ Fetch the gene set of interest.
 ```{r}
 genes <- read.csv(paste0(RCDdb, "Autophagy_dependent_cell_death.csv"))
 genes$gene_id <- cleanid(genes$gene_id)
-genes <- genes[!duplicated(genes[ , c("gene_id")]),]
-genes <- genes[complete.cases(genes), ]
+genes <- distinct(genes, gene_id, .keep_all = TRUE)
+genes <- subset(genes, gene_id != "")
 genes
 ```
 
@@ -432,8 +432,8 @@ Fetch the gene set of interest.
 ```{r}
 genes <- read.csv(paste0(RCDdb, "Cuproptosis.csv"))
 genes$gene_id <- cleanid(genes$gene_id)
-genes <- genes[!duplicated(genes[ , c("gene_id")]),]
-genes <- genes[complete.cases(genes), ]
+genes <- distinct(genes, gene_id, .keep_all = TRUE)
+genes <- subset(genes, gene_id != "")
 genes
 ```
 
@@ -457,8 +457,8 @@ Fetch the gene set of interest.
 ```{r}
 genes <- read.csv(paste0(RCDdb, "Disulfidptosis.csv"))
 genes$gene_id <- cleanid(genes$gene_id)
-genes <- genes[!duplicated(genes[ , c("gene_id")]),]
-genes <- genes[complete.cases(genes), ]
+genes <- distinct(genes, gene_id, .keep_all = TRUE)
+genes <- subset(genes, gene_id != "")
 genes
 ```
 
@@ -482,8 +482,8 @@ Fetch the gene set of interest.
 ```{r}
 genes <- read.csv(paste0(RCDdb, "Entotic_cell_death.csv"))
 genes$gene_id <- cleanid(genes$gene_id)
-genes <- genes[!duplicated(genes[ , c("gene_id")]),]
-genes <- genes[complete.cases(genes), ]
+genes <- distinct(genes, gene_id, .keep_all = TRUE)
+genes <- subset(genes, gene_id != "")
 genes
 ```
 
@@ -507,8 +507,8 @@ Fetch the gene set of interest.
 ```{r}
 genes <- read.csv(paste0(RCDdb, "Immunogenic_cell_death.csv"))
 genes$gene_id <- cleanid(genes$gene_id)
-genes <- genes[!duplicated(genes[ , c("gene_id")]),]
-genes <- genes[complete.cases(genes), ]
+genes <- distinct(genes, gene_id, .keep_all = TRUE)
+genes <- subset(genes, gene_id != "")
 genes
 ```
 
@@ -532,8 +532,8 @@ Fetch the gene set of interest.
 ```{r}
 genes <- read.csv(paste0(RCDdb, "Lysosome_dependent_cell_death.csv"))
 genes$gene_id <- cleanid(genes$gene_id)
-genes <- genes[!duplicated(genes[ , c("gene_id")]),]
-genes <- genes[complete.cases(genes), ]
+genes <- distinct(genes, gene_id, .keep_all = TRUE)
+genes <- subset(genes, gene_id != "")
 genes
 ```
 
@@ -557,8 +557,8 @@ Fetch the gene set of interest.
 ```{r}
 genes <- read.csv(paste0(RCDdb, "MPT_driven_necrosis.csv"))
 genes$gene_id <- cleanid(genes$gene_id)
-genes <- genes[!duplicated(genes[ , c("gene_id")]),]
-genes <- genes[complete.cases(genes), ]
+genes <- distinct(genes, gene_id, .keep_all = TRUE)
+genes <- subset(genes, gene_id != "")
 genes
 ```
 
@@ -582,8 +582,8 @@ Fetch the gene set of interest.
 ```{r}
 genes <- read.csv(paste0(RCDdb, "NETotic_cell_death.csv"))
 genes$gene_id <- cleanid(genes$gene_id)
-genes <- genes[!duplicated(genes[ , c("gene_id")]),]
-genes <- genes[complete.cases(genes), ]
+genes <- distinct(genes, gene_id, .keep_all = TRUE)
+genes <- subset(genes, gene_id != "")
 genes
 ```
 
@@ -607,8 +607,8 @@ Fetch the gene set of interest.
 ```{r}
 genes <- read.csv(paste0(RCDdb, "Oxeiptosis.csv"))
 genes$gene_id <- cleanid(genes$gene_id)
-genes <- genes[!duplicated(genes[ , c("gene_id")]),]
-genes <- genes[complete.cases(genes), ]
+genes <- distinct(genes, gene_id, .keep_all = TRUE)
+genes <- subset(genes, gene_id != "")
 genes
 ```
 
@@ -633,8 +633,8 @@ Fetch the gene set of interest.
 ```{r}
 genes <- read.csv(paste0(RCDdb, "Parthanatos.csv"))
 genes$gene_id <- cleanid(genes$gene_id)
-genes <- genes[!duplicated(genes[ , c("gene_id")]),]
-genes <- genes[complete.cases(genes), ]
+genes <- distinct(genes, gene_id, .keep_all = TRUE)
+genes <- subset(genes, gene_id != "")
 genes
 ```
 
