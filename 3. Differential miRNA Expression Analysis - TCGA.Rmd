@@ -1,5 +1,6 @@
 ---
-title: "Differential miRNA Expression Analysis - TCGA"
+title: "Differential miRNA Expression Analysis"
+author: Mark Edward M. Gonzales & Dr. Anish M.S. Shrestha
 output: html_notebook
 ---
 
