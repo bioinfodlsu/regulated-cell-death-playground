@@ -2,9 +2,9 @@ import csv
 import os
 
 
-
 def get_rcd_type(rcd_file):
-    return rcd_file.split('/')[-1][:-len(".csv")]
+    return rcd_file.split("/")[-1][: -len(".csv")]
+
 
 def make_dict_of_genes(rcd_file):
     dict_of_genes = {}
@@ -20,6 +20,7 @@ def make_dict_of_genes(rcd_file):
 
     return dict_of_genes
 
+
 def get_unique_genes(rcd, rcd_genes_master_dict):
     all_other_genes = set()
     for rcd_type, genes in rcd_genes_master_dict.items():
@@ -29,13 +30,24 @@ def get_unique_genes(rcd, rcd_genes_master_dict):
     rcd_genes = set(rcd_genes_master_dict[rcd].keys())
     unique_genes = rcd_genes - all_other_genes
 
-    with open(f"{UNIQUE_GENES_DIR}/{rcd}.csv", "w", newline='') as f:
-        unique_genes_info = []
+    with open(f"{UNIQUE_GENES_DIR}/{rcd}.csv", "w", newline="") as f:
+        unique_genes_info = [
+            [
+                "deathtype",
+                "gene",
+                "description",
+                "gene_id",
+                "gene_biotype",
+                "pmid",
+                "comment",
+            ]
+        ]
         for gene in unique_genes:
             unique_genes_info.append(rcd_genes_master_dict[rcd][gene])
 
         handle = csv.writer(f)
         handle.writerows(unique_genes_info)
+
 
 DATA_DIR = "data/RCDdb"
 UNIQUE_GENES_DIR = "temp/unique_genes/necroptosis_ferroptosis_pyroptosis"
@@ -51,4 +63,3 @@ for rcd_file in [f"{rcd_type}.csv" for rcd_type in rcd_types_of_interest]:
 
 for rcd_type in rcd_types_of_interest:
     get_unique_genes(rcd_type, rcd_genes_master_dict)
-
