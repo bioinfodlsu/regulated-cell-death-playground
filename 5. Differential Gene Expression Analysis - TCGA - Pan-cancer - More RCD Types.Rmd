@@ -187,7 +187,27 @@ for (project in projects) {
 
 ### Regulated Cell Death
 
-Refer to `1. Exploratory Data Analysis - MSigDB Gene Sets + GTEx TPM.rmd` for more detailed documentation on obtaining the gene sets.
+We obtain the gene sets from RCDdb: https://pmc.ncbi.nlm.nih.gov/articles/PMC11384979/
+
+Download the gene sets by running:
+
+```
+wget http://chenyclab.com/RCDdb/download/Apoptosis.csv -P data/RCDdb/
+wget http://chenyclab.com/RCDdb/download/Entotic_cell_death.csv -P data/RCDdb/
+wget http://chenyclab.com/RCDdb/download/Necroptosis.csv -P data/RCDdb/
+wget http://chenyclab.com/RCDdb/download/Alkaliptosis.csv -P data/RCDdb/
+wget http://chenyclab.com/RCDdb/download/Ferroptosis.csv -P data/RCDdb/
+wget http://chenyclab.com/RCDdb/download/NETotic_cell_death.csv -P data/RCDdb/
+wget http://chenyclab.com/RCDdb/download/Autophagy_dependent_cell_death.csv -P data/RCDdb/
+wget http://chenyclab.com/RCDdb/download/Immunogenic_cell_death.csv -P data/RCDdb/
+wget http://chenyclab.com/RCDdb/download/Oxeiptosis.csv -P data/RCDdb/
+wget http://chenyclab.com/RCDdb/download/Cuproptosis.csv -P data/RCDdb/
+wget http://chenyclab.com/RCDdb/download/Lysosome_dependent_cell_death.csv -P data/RCDdb/
+wget http://chenyclab.com/RCDdb/download/Parthanatos.csv -P data/RCDdb/
+wget http://chenyclab.com/RCDdb/download/Disulfidptosis.csv -P data/RCDdb/
+wget http://chenyclab.com/RCDdb/download/MPT_driven_necrosis.csv -P data/RCDdb/
+wget http://chenyclab.com/RCDdb/download/Pyroptosis.csv -P data/RCDdb/
+```
 
 ```{r}
 RCDdb <- "data/RCDdb/"
