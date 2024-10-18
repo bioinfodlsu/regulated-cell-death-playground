@@ -1,6 +1,6 @@
 ---
 title: "Survival Analysis"
-subtitle: "Colorectal Cancer | Necroptosis"
+subtitle: "Colorectal Cancer | Ferroptosis | Unique Genes"
 author: 
   - Mark Edward M. Gonzales^[De La Salle University, Manila, Philippines, gonzales.markedward@gmail.com]
   - Dr. Anish M.S. Shrestha^[De La Salle University, Manila, Philippines, anish.shrestha@dlsu.edu.ph]
@@ -296,12 +296,12 @@ perform_vsd <- function(genes) {
 ```
 
 
-#### Necroptosis
+#### Ferroptosis
 
 Fetch the gene set of interest.
 
 ```{r}
-genes <- read.csv(paste0(RCDdb, "Necroptosis.csv"))
+genes <- read.csv(paste0(RCDdb, "Ferroptosis.csv"))
 print(genes)
 genes$gene_id <- cleanid(genes$gene_id)
 genes <- distinct(genes, gene_id, .keep_all = TRUE)
@@ -329,7 +329,9 @@ vsd <- perform_vsd(genes)
 
 ## V. Downloading the clinical data
 
-Download clinical data from TCGA.
+Download clinical data from TCGA, and perform some preprocessing:
+- The `deceased` column should be `FALSE` if the patient is alive and `TRUE` otherwise
+- The `overall_survival` column should reflect the follow-up time if the patient is alive and the days to death otherwise
 
 ```{r}
 download_clinical_data <- function(project) {
@@ -363,7 +365,7 @@ construct_gene_df <- function(gene_of_interest, project) {
     gather(key = "case_id", value = "counts", -gene_id) %>%
     left_join(., genes, by = "gene_id") %>%
     dplyr::filter(gene == gene_of_interest)
-
+  
   median_value <- median(gene_df$counts)
   gene_df$strata <- ifelse(gene_df$counts >= median_value, "HIGH", "LOW")
   gene_df$case_id <- gsub("-01.*", "", gene_df$case_id)
@@ -398,17 +400,61 @@ compute_survival_diff <- function(gene_df) {
 
 Perform survival analysis by testing for the difference in the Kaplan-Meier curves using the G-rho family of Harrington and Fleming tests: https://rdrr.io/cran/survival/man/survdiff.html
 
-Our genes of interest are MLKL (the primary executor of necroptosis) and the differentially expressed genes.
+Our genes of interest are the differentially expressed genes.
 
 ```{r}
+significant_projects <- c()
+significant_genes <- c()
+
 for (project in projects) {
-  for (gene in c("MLKL", deseq.bbl.data.combined$gene_symbol)) {
+  for (gene in c(deseq.bbl.data.combined$gene_symbol)) {
+    cat(project, gene, "\n\n")
+    gene_df <- construct_gene_df(gene, project)
+    
+    if (nrow(gene_df) > 0) {
+      fit <- compute_surival_fit(gene_df)
+      tryCatch (
+        {
+          survival <- compute_survival_diff(gene_df)
+          print(survival)
+          print(plot_survival(fit))
+          if (pchisq(survival$chisq, length(survival$n)-1, lower.tail = FALSE) < 0.05) {
+            significant_projects <- c(significant_projects, project)
+            significant_genes <- c(significant_genes, gene)
+          }
+        },
+        error = function(e) {
+        }
+      )
+      
+    }
+    
+    cat("\n\n============================\n\n")
+  }
+}
+```
+
+Display the results only for genes where a significant difference in survival has been reported.
+
+```{r}
+significant_genes
+```
+
+```{r}
+num_significant_genes <- length(significant_genes)
+
+if (num_significant_genes > 0) {
+  for (i in 1 : num_significant_genes) {
+    project <- significant_projects[[i]]
+    gene <- significant_genes[[i]]
+    
     cat(project, gene, "\n\n")
     gene_df <- construct_gene_df(gene, project)
     fit <- compute_surival_fit(gene_df)
     print(plot_survival(fit))
-    print(compute_survival_diff(gene_df))
+    survival <- compute_survival_diff(gene_df)
+    print(survival)
     cat("\n\n============================\n\n")
-  }
+  } 
 }
 ```
