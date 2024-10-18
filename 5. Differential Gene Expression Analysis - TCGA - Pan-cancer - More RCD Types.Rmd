@@ -32,7 +32,7 @@ library("grex")
 
 Create a function for downloading TCGA gene expression data. 
 
-For more detailed documentation, refer to `2. Differential Gene Expression Analysis - TCGA.rmd`.
+For more detailed documentation, refer to `2. Differential Gene Expression Analysis - TCGA.Rmd`.
 
 ```{r}
 query_and_filter_samples <- function(project) {
@@ -46,7 +46,7 @@ query_and_filter_samples <- function(project) {
     sample.type = "Primary Tumor"
   )
   tumor <- getResults(query_tumor)
-  
+
   query_normal <- GDCquery(
     project = project,
     data.category = "Transcriptome Profiling",
@@ -57,17 +57,17 @@ query_and_filter_samples <- function(project) {
     sample.type = "Solid Tissue Normal"
   )
   normal <- getResults(query_normal)
-  
+
   submitter_ids <- inner_join(tumor, normal, by = "cases.submitter_id") %>%
     dplyr::select(cases.submitter_id)
   tumor <- tumor %>%
     dplyr::filter(cases.submitter_id %in% submitter_ids$cases.submitter_id)
   normal <- normal %>%
     dplyr::filter(cases.submitter_id %in% submitter_ids$cases.submitter_id)
-  
+
   samples <- rbind(tumor, normal)
   unique(samples$sample_type)
-  
+
   query_project <- GDCquery(
     project = project,
     data.category = "Transcriptome Profiling",
@@ -78,13 +78,13 @@ query_and_filter_samples <- function(project) {
     sample.type = c("Solid Tissue Normal", "Primary Tumor"),
     barcode = as.list(samples$sample.submitter_id)
   )
-  
-  # If this is your first time running this notebook (i.e., you have not yet downloaded the results of the query in the previous block), 
+
+  # If this is your first time running this notebook (i.e., you have not yet downloaded the results of the query in the previous block),
   # uncomment the line below
-  
+
   # GDCdownload(query_project)
-  
-  return (list(samples = samples, query_project = query_project))
+
+  return(list(samples = samples, query_project = query_project))
 }
 ```
 
@@ -93,16 +93,18 @@ Download the TCGA gene expression data for different cancer types.
 Refer to this link for the list of TCGA cancer type abbreviations: https://gdc.cancer.gov/resources-tcga-users/tcga-code-tables/tcga-study-abbreviations
 
 ```{r, message=FALSE}
-projects <- c("TCGA-LUSC", "TCGA-COAD", "TCGA-KICH", "TCGA-KIRC", "TCGA-PRAD",
-              "TCGA-BRCA", "TCGA-HNSC", "TCGA-KIRP", "TCGA-LIHC", "TCGA-STAD",
-              "TCGA-THCA", "TCGA-BLCA", "TCGA-LUAD", "TCGA-ESCA")
+projects <- c(
+  "TCGA-LUSC", "TCGA-COAD", "TCGA-KICH", "TCGA-KIRC", "TCGA-PRAD",
+  "TCGA-BRCA", "TCGA-HNSC", "TCGA-KIRP", "TCGA-LIHC", "TCGA-STAD",
+  "TCGA-THCA", "TCGA-BLCA", "TCGA-LUAD", "TCGA-ESCA"
+)
 
 samples <- list()
 project_data <- list()
 
 for (project in projects) {
   result <- query_and_filter_samples(project)
-  
+
   samples[[project]] <- result$samples
   project_data[[project]] <- result$query_project
 }
@@ -127,14 +129,14 @@ for (project in projects) {
 ```{r}
 for (project in projects) {
   count_matrix <- assay(tcga_data[[project]], "unstranded")
-  
+
   # Remove duplicate entries
   count_matrix_df <- data.frame(count_matrix)
   count_matrix_df <- count_matrix_df[!duplicated(count_matrix_df), ]
   count_matrix <- data.matrix(count_matrix_df)
   rownames(count_matrix) <- cleanid(rownames(count_matrix))
   count_matrix <- count_matrix[!(duplicated(rownames(count_matrix)) | duplicated(rownames(count_matrix), fromLast = TRUE)), ]
-  
+
   tcga_matrix[[project]] <- count_matrix
 }
 ```
@@ -156,7 +158,7 @@ DESeq2 requires the row names of `samples` should be identical to the column nam
 for (project in projects) {
   colnames(tcga_matrix[[project]]) <- gsub(x = colnames(tcga_matrix[[project]]), pattern = "\\.", replacement = "-")
   tcga_matrix[[project]] <- tcga_matrix[[project]][, rownames(samples[[project]])]
-  
+
   # Sanity check
   print(all(colnames(tcga_matrix[[project]]) == rownames(samples[[project]])))
 }
@@ -224,10 +226,10 @@ filter_gene_set_and_perform_dgea <- function(genes) {
     tcga_rcd[[project]] <- tcga_matrix[[project]][rownames(tcga_matrix[[project]]) %in% genes$gene_id, ]
     tcga_rcd[[project]] <- tcga_rcd[[project]][, rownames(samples[[project]])]
   }
-  
+
   dds_rcd <- list()
   res_rcd <- list()
-  
+
   for (project in projects) {
     print(project)
     print("=============")
@@ -241,9 +243,9 @@ filter_gene_set_and_perform_dgea <- function(genes) {
     dds_rcd[[project]] <- DESeq(dds)
     res_rcd[[project]] <- results(dds_rcd[[project]])
   }
-  
+
   deseq.bbl.data <- list()
-  
+
   for (project in projects) {
     deseq.results <- res_rcd[[project]]
     deseq.bbl.data[[project]] <- data.frame(
@@ -258,41 +260,42 @@ filter_gene_set_and_perform_dgea <- function(genes) {
       gene_symbol = genes[rownames(deseq.results), "gene"]
     )
   }
-  
+
   deseq.bbl.data.combined <- bind_rows(deseq.bbl.data)
   deseq.bbl.data.combined <- dplyr::filter(deseq.bbl.data.combined, abs(log2FoldChange) >= 1.5 & padj < 0.05)
-  
-  return (deseq.bbl.data.combined)
+
+  return(deseq.bbl.data.combined)
 }
 ```
 
 ```{r}
 plot_dgea <- function(deseq.bbl.data.combined) {
   sizes <- c("<10^-15" = 4, "10^-10" = 3, "10^-5" = 2, "0.05" = 1)
-  
+
   deseq.bbl.data.combined <- deseq.bbl.data.combined %>%
-  mutate(fdr_category = cut(padj,
-                            breaks = c(-Inf, 1e-15, 1e-10, 1e-5, 0.05),
-                            labels = c("<10^-15", "10^-10", "10^-5", "0.05"),
-                            right = FALSE))
+    mutate(fdr_category = cut(padj,
+      breaks = c(-Inf, 1e-15, 1e-10, 1e-5, 0.05),
+      labels = c("<10^-15", "10^-10", "10^-5", "0.05"),
+      right = FALSE
+    ))
 
   top_genes <- deseq.bbl.data.combined %>%
     group_by(cancer_type) %>%
     mutate(rank = rank(-abs(log2FoldChange))) %>%
     dplyr::filter(rank <= 10) %>%
     ungroup()
-  
-  ggplot(top_genes, aes(y=cancer_type, x=gene_symbol, size=fdr_category, fill=log2FoldChange)) +
-      geom_point(alpha=0.5, shape=21, color="black") +
-      scale_size_manual(values = sizes) +
-      scale_fill_gradient2(low = "blue", mid = "white", high = "red", limits = c(min(deseq.bbl.data.combined$log2FoldChange),max(deseq.bbl.data.combined$log2FoldChange))) +
-      theme_minimal() +
-      theme(
-        axis.text.x = element_text(size = 9, angle = 90, hjust = 1)
-      ) +
-      theme(legend.position="bottom") +
-      theme(legend.position = "bottom")+
-      labs(size = "Adjusted p-value", fill = "log2 FC", y = "Cancer type", x = "Gene")
+
+  ggplot(top_genes, aes(y = cancer_type, x = gene_symbol, size = fdr_category, fill = log2FoldChange)) +
+    geom_point(alpha = 0.5, shape = 21, color = "black") +
+    scale_size_manual(values = sizes) +
+    scale_fill_gradient2(low = "blue", mid = "white", high = "red", limits = c(min(deseq.bbl.data.combined$log2FoldChange), max(deseq.bbl.data.combined$log2FoldChange))) +
+    theme_minimal() +
+    theme(
+      axis.text.x = element_text(size = 9, angle = 90, hjust = 1)
+    ) +
+    theme(legend.position = "bottom") +
+    theme(legend.position = "bottom") +
+    labs(size = "Adjusted p-value", fill = "log2 FC", y = "Cancer type", x = "Gene")
 }
 ```
 

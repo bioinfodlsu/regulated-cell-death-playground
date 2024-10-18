@@ -221,7 +221,7 @@ plot_pca(vsd, PC_x = 1, PC_y = 2, shape_by = "type")
 ```
 ### Regulated Cell Death
 
-Refer to `1. Exploratory Data Analysis - MSigDB Gene Sets + GTEx TPM.rmd` for more detailed documentation on obtaining the gene sets.
+Refer to `1. Exploratory Data Analysis - MSigDB Gene Sets + GTEx TPM.Rmd` for more detailed documentation on obtaining the gene sets.
 
 #### Necroptosis
 
