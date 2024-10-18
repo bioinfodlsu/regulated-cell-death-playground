@@ -1,6 +1,6 @@
 ---
 title: "Survival Analysis"
-subtitle: "Colorectal Cancer | Necroptosis | Unique Genes"
+subtitle: "Colorectal Cancer | Necroptosis | Unique Genes per RCD Type"
 author: 
   - Mark Edward M. Gonzales^[De La Salle University, Manila, Philippines, gonzales.markedward@gmail.com]
   - Dr. Anish M.S. Shrestha^[De La Salle University, Manila, Philippines, anish.shrestha@dlsu.edu.ph]

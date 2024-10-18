@@ -1,6 +1,6 @@
 ---
 title: "Differential Gene Expression Analysis"
-subtitle: "Pan-cancer | Necroptosis, Ferroptosis & Pyroptosis | Unique genes per RCD type"
+subtitle: "Pan-cancer | Necroptosis, Ferroptosis & Pyroptosis | Unique Genes per RCD Type"
 author: 
   - Mark Edward M. Gonzales^[De La Salle University, Manila, Philippines, gonzales.markedward@gmail.com]
   - Dr. Anish M.S. Shrestha^[De La Salle University, Manila, Philippines, anish.shrestha@dlsu.edu.ph]
