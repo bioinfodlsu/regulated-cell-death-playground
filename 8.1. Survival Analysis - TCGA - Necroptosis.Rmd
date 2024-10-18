@@ -175,7 +175,7 @@ For more detailed documentation on obtaining the gene set, refer to `7. Differen
 RCDdb <- "temp/unique_genes/necroptosis_ferroptosis_pyroptosis/"
 ```
 
-Write utility functions for filtering the gene sets, performing differential gene expression analysis, and plotting the results.
+Write utility functions for filtering the gene sets, performing differential gene expression analysis, plotting the results, and performing variance-stabilizing transformation.
 
 ```{r}
 filter_gene_set_and_perform_dgea <- function(genes) {
@@ -317,13 +317,15 @@ Plot the results.
 ```{r}
 plot_dgea(deseq.bbl.data.combined)
 ```
-
+Perform variance-stabilizing transformation for further downstream analysis (i.e., for survival analysis).
 
 ```{r, warning=FALSE}
 vsd <- perform_vsd(genes)
 ```
 
 ## V. Downloading the clinical data
+
+Download clinical data from TCGA.
 
 ```{r}
 download_clinical_data <- function(project) {
@@ -343,6 +345,10 @@ for (project in projects) {
   tcga_clinical[[project]] <- download_clinical_data(project)
 }
 ```
+
+## VI. Performing survival analysis
+
+Write utility functions for performing survival analysis.
 
 ```{r}
 construct_gene_df <- function(gene_of_interest, project) {
@@ -373,7 +379,8 @@ plot_survival <- function(fit) {
   return (ggsurvplot(fit,
            data = gene_df,
            pval = T,
-           risk.table = T))
+           risk.table = T, 
+           risk.table.height=0.3))
 }
 ```
 
@@ -383,15 +390,19 @@ compute_survival_diff <- function(gene_df) {
 }
 ```
 
+Perform survival analysis by testing for the difference in the Kaplan-Meier curves using the G-rho family of Harrington and Fleming tests: https://rdrr.io/cran/survival/man/survdiff.html
+
+Our genes of interest are MLKL (the primary executor of necroptosis) and the differentially expressed genes.
+
 ```{r}
 for (project in projects) {
-  for (gene in deseq.bbl.data.combined$gene_symbol) {
+  for (gene in c("MLKL", deseq.bbl.data.combined$gene_symbol)) {
     cat(project, gene, "\n\n")
     gene_df <- construct_gene_df(gene, project)
     fit <- compute_surival_fit(gene_df)
     print(plot_survival(fit))
     print(compute_survival_diff(gene_df))
-    cat("\n\n===============\n\n")
+    cat("\n\n============================\n\n")
   }
 }
 
