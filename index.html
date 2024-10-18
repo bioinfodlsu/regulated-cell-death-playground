@@ -294,7 +294,7 @@
           <tr>
             <td>
               Differential Gene Expression Analysis <br />
-              Pan-Cancer
+              Pan-Cancer (Partial)
               <br />
               Necroptosis, Ferroptosis & Pyroptosis
             </td>
@@ -382,7 +382,7 @@
           <tr>
             <td>
               Differential Gene Expression Analysis <br />
-              Pan-Cancer
+              Pan-Cancer (Partial)
               <br />
               Multiple RCD Types (Including NETosis, Cuproptosis, etc.)
             </td>
@@ -511,6 +511,201 @@
                 href="https://github.com/bioinfodlsu/regulated-cell-death-playground/blob/main/6.%20Gene%20Expression%20Analysis%20-%20FHC.Rmd"
                 target="_blank"
                 >Code</a
+              >
+            </td>
+          </tr>
+
+          <tr>
+            <td>
+              Differential Gene Expression Analysis <br />
+              Pan-Cancer
+              <br />
+              Necroptosis, Ferroptosis & Pyroptosis
+              <br />
+              Unique Genes
+            </td>
+            <td>
+              <ol style="margin-left: -1em">
+                <li>
+                  Download RNA-seq data from
+                  <b
+                    ><a
+                      href="https://www.cancer.gov/ccg/research/genome-sequencing/tcga"
+                      >The Cancer Genome Atlas (TCGA)</a
+                    ></b
+                  >.
+                </li>
+                <li>
+                  Filter data to include normal and malignant pairs from
+                  <b>all TCGA studies</b> in this
+                  <a
+                    href="https://gdc.cancer.gov/resources-tcga-users/tcga-code-tables/tcga-study-abbreviations"
+                    >list</a
+                  >.
+                </li>
+                <li>
+                  Download RCD gene sets for
+                  <b>necroptosis, ferroptosis, and pyroptosis</b> in
+                  <b
+                    ><a href="http://chenyclab.com/RCDdb/index.html"
+                      >RCDdb</a
+                    ></b
+                  >.
+                </li>
+                <li>
+                  For each RCD type:
+                  <ul>
+                    <li>
+                      <b
+                        >Get only the genes unique to the RCD type of
+                        interest.</b
+                      >
+                    </li>
+                    <li>
+                      Filter the count matrix to include only genes related to
+                      the RCD type of interest.
+                    </li>
+                    <li>
+                      Perform differential gene expression analysis using
+                      <a
+                        href="https://bioconductor.org/packages/release/bioc/html/DESeq2.html"
+                        ><b>DESeq2</b></a
+                      >.
+                    </li>
+                  </ul>
+                </li>
+              </ol>
+            </td>
+            <td>
+              <a
+                href="7. Differential Gene Expression Analysis - TCGA - Pan-cancer - Unique Genes.nb.html"
+                target="_blank"
+                >Results</a
+              >
+            </td>
+            <td>
+              <a
+                href="https://github.com/bioinfodlsu/regulated-cell-death-playground/blob/main/7.%20Differential%20Gene%20Expression%20Analysis%20-%20TCGA%20-%20Pan-cancer%20-%20Unique%20Genes.Rmd"
+                target="_blank"
+                >Code</a
+              >
+            </td>
+          </tr>
+
+          <tr>
+            <td>
+              Survival Analysis <br />
+              Colorectal Cancer
+              <br />
+              Necroptosis, Ferroptosis & Pyroptosis
+              <br />
+              Unique Genes
+            </td>
+            <td>
+              <ol style="margin-left: -1em">
+                <li>
+                  Download RNA-seq and clinical data from
+                  <b
+                    ><a
+                      href="https://www.cancer.gov/ccg/research/genome-sequencing/tcga"
+                      >The Cancer Genome Atlas (TCGA)</a
+                    ></b
+                  >.
+                </li>
+                <li>
+                  Filter data to include normal and malignant pairs from
+                  <b>TCGA-COAD</b>.
+                </li>
+                <li>
+                  Download RCD gene sets for
+                  <b>necroptosis, ferroptosis, and pyroptosis</b> in
+                  <b
+                    ><a href="http://chenyclab.com/RCDdb/index.html"
+                      >RCDdb</a
+                    ></b
+                  >.
+                </li>
+                <li>
+                  For each RCD type:
+                  <ul>
+                    <li>
+                      <b
+                        >Get only the genes unique to the RCD type of
+                        interest.</b
+                      >
+                    </li>
+                    <li>
+                      Filter the count matrix to include only genes related to
+                      the RCD type of interest.
+                    </li>
+                    <li>
+                      Perform differential gene expression analysis using
+                      <a
+                        href="https://bioconductor.org/packages/release/bioc/html/DESeq2.html"
+                        ><b>DESeq2</b></a
+                      >.
+                    </li>
+                    <li>
+                      Perform variance-stabilizing transformation on the counts,
+                      and use these variance-stabilized counts for the survival
+                      analysis.
+                    </li>
+                    <li>
+                      For each differentially expressed gene:
+                      <ul>
+                        <li>
+                          Divide the patient cohort into patients with low
+                          versus high expression of the gene of interest (using
+                          the median as the threshold).
+                        </li>
+                        <li>Plot the Kaplan-Meier survival curves.</li>
+                        <li>
+                          Test for significant difference between these curves
+                          using the <i>G<sup>&rho;</sup></i> family of
+                          Harrington and Fleming tests.
+                        </li>
+                      </ul>
+                    </li>
+                  </ul>
+                </li>
+              </ol>
+            </td>
+            <td>
+              <a
+                href="8.1. Survival Analysis - TCGA - Necroptosis - Unique Genes.nb.html"
+                target="_blank"
+                >Necroptosis</a
+              >
+              <br />
+              <a
+                href="8.2. Survival Analysis - TCGA - Ferroptosis - Unique Genes.nb.html"
+                target="_blank"
+                >Ferroptosis</a
+              >
+              <br />
+              <a
+                href="8.3. Survival Analysis - TCGA - Pyroptosis - Unique Genes.nb.html"
+                target="_blank"
+                >Pyroptosis</a
+              >
+            </td>
+            <td>
+              <a
+                href="https://github.com/bioinfodlsu/regulated-cell-death-playground/blob/main/8.1.%20Survival%20Analysis%20-%20TCGA%20-%20Necroptosis%20-%20Unique%20Genes.Rmd"
+                target="_blank"
+                >Necroptosis</a
+              >
+              <br />
+              <a
+                href="https://github.com/bioinfodlsu/regulated-cell-death-playground/blob/main/8.2.%20Survival%20Analysis%20-%20TCGA%20-%20Ferroptosis%20-%20Unique%20Genes.Rmd"
+                target="_blank"
+                >Ferroptosis</a
+              >
+              <br />
+              <a
+                href="https://github.com/bioinfodlsu/regulated-cell-death-playground/blob/main/8.3.%20Survival%20Analysis%20-%20TCGA%20-%20Pyroptosis%20-%20Unique%20Genes.Rmd"
+                target="_blank"
+                >Pyroptosis</a
               >
             </td>
           </tr>
