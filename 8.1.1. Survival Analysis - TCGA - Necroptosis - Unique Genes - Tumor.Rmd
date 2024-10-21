@@ -1,6 +1,6 @@
 ---
 title: "Survival Analysis"
-subtitle: "Colorectal Cancer | Ferroptosis | Unique Genes per RCD Type"
+subtitle: "Colorectal Cancer | Necroptosis | Unique Genes per RCD Type | Gene Expression of Tumor Samples"
 author: 
   - Mark Edward M. Gonzales^[De La Salle University, Manila, Philippines, gonzales.markedward@gmail.com]
   - Dr. Anish M.S. Shrestha^[De La Salle University, Manila, Philippines, anish.shrestha@dlsu.edu.ph]
@@ -296,12 +296,12 @@ perform_vsd <- function(genes) {
 ```
 
 
-#### Ferroptosis
+#### Necroptosis
 
 Fetch the gene set of interest.
 
 ```{r}
-genes <- read.csv(paste0(RCDdb, "Ferroptosis.csv"))
+genes <- read.csv(paste0(RCDdb, "Necroptosis.csv"))
 print(genes)
 genes$gene_id <- cleanid(genes$gene_id)
 genes <- distinct(genes, gene_id, .keep_all = TRUE)
@@ -357,27 +357,39 @@ for (project in projects) {
 
 Write utility functions for performing survival analysis.
 
+
 ```{r}
 construct_gene_df <- function(gene_of_interest, project) {
-  gene_df <- vsd$`TCGA-COAD` %>%
+  gene_df <- vsd[[project]] %>%
     as.data.frame() %>%
     rownames_to_column(var = "gene_id") %>%
     gather(key = "case_id", value = "counts", -gene_id) %>%
     left_join(., genes, by = "gene_id") %>%
-    dplyr::filter(gene == gene_of_interest)
-  
-  median_value <- median(gene_df$counts)
-  gene_df$strata <- ifelse(gene_df$counts >= median_value, "HIGH", "LOW")
-  gene_df$case_id <- gsub("-01.*", "", gene_df$case_id)
-  gene_df <- merge(gene_df, tcga_clinical[[project]], by.x = "case_id", by.y = "submitter_id")
+    dplyr::filter(gene == gene_of_interest) %>%
+    dplyr::filter(case_id %in% rownames(samples[[project]] %>% dplyr::filter(type == "tumor")))
 
+  q1 <- quantile(gene_df$counts, probs = 0.25)
+  q3 <- quantile(gene_df$counts, probs = 0.75)
+  gene_df$strata <- ifelse(gene_df$counts >= q3, "HIGH", ifelse(gene_df$counts <= q1, "LOW", "MIDDLE"))
+  gene_df <- gene_df %>% dplyr::filter(strata %in% c("LOW", "HIGH"))
+  gene_df$case_id <- paste0(sapply(strsplit(as.character(gene_df$case_id), "-"), `[`, 1), '-',
+                          sapply(strsplit(as.character(gene_df$case_id), "-"), `[`, 2), '-', 
+                          sapply(strsplit(as.character(gene_df$case_id), "-"), `[`, 3))
+  gene_df <- merge(gene_df, tcga_clinical[[project]], by.x = "case_id", by.y = "submitter_id")
+  
   return(gene_df)
 }
 ```
 
 ```{r}
 compute_surival_fit <- function(gene_df) {
-  fit <- survfit(Surv(overall_survival, deceased) ~ strata, data = gene_df)
+  return (survfit(Surv(overall_survival, deceased) ~ strata, data = gene_df))
+}
+```
+
+```{r}
+compute_cox <- function(gene_df) {
+  return (coxph(Surv(overall_survival, deceased) ~ strata, data=gene_df))
 }
 ```
 
@@ -400,23 +412,35 @@ compute_survival_diff <- function(gene_df) {
 
 Perform survival analysis by testing for the difference in the Kaplan-Meier curves using the G-rho family of Harrington and Fleming tests: https://rdrr.io/cran/survival/man/survdiff.html
 
-Our genes of interest are the differentially expressed genes.
+Our genes of interest are MLKL (the primary executor of necroptosis) and the differentially expressed genes.
 
 ```{r}
 significant_projects <- c()
 significant_genes <- c()
 
+ctr <- 1
 for (project in projects) {
-  for (gene in c(deseq.bbl.data.combined$gene_symbol)) {
+  for (gene in c("MLKL", genes$gene)) {
     cat(project, gene, "\n\n")
-    gene_df <- construct_gene_df(gene, project)
-    
+    tryCatch (
+      {
+        gene_df <- construct_gene_df(gene, project)
+      },
+      error = function(e) {
+      }
+    )
+
     if (nrow(gene_df) > 0) {
       fit <- compute_surival_fit(gene_df)
       tryCatch (
         {
           survival <- compute_survival_diff(gene_df)
+          cox <- compute_cox(gene_df)
+          print(ctr)
+          ctr <- ctr + 1
           print(survival)
+          cat("\n")
+          print(cox)
           print(plot_survival(fit))
           if (pchisq(survival$chisq, length(survival$n)-1, lower.tail = FALSE) < 0.05) {
             significant_projects <- c(significant_projects, project)
@@ -450,10 +474,15 @@ if (num_significant_genes > 0) {
     
     cat(project, gene, "\n\n")
     gene_df <- construct_gene_df(gene, project)
+    
     fit <- compute_surival_fit(gene_df)
-    print(plot_survival(fit))
     survival <- compute_survival_diff(gene_df)
+    cox <- compute_cox(gene_df)
     print(survival)
+    cat("\n")
+    print(cox)
+    print(plot_survival(fit))
+    
     cat("\n\n============================\n\n")
   } 
 }
