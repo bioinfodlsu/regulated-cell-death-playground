@@ -422,13 +422,18 @@ ctr <- 1
 for (project in projects) {
   for (gene in c("MLKL", genes$gene)) {
     cat(project, gene, "\n\n")
-    tryCatch (
+    cat(project, gene, "\n\n")
+    error <- tryCatch (
       {
         gene_df <- construct_gene_df(gene, project)
       },
       error = function(e) {
+        cat("\n\n============================\n\n")
+        e
       }
     )
+    
+    if(inherits(error, "error")) next
 
     if (nrow(gene_df) > 0) {
       fit <- compute_surival_fit(gene_df)
