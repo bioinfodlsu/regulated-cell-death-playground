@@ -600,6 +600,8 @@
               Necroptosis, Ferroptosis & Pyroptosis
               <br />
               Unique Genes
+              <br />
+              Tumor Samples
             </td>
             <td>
               <ol style="margin-left: -1em">
@@ -655,14 +657,23 @@
                       <ul>
                         <li>
                           Divide the patient cohort into patients with low
-                          versus high expression of the gene of interest (using
-                          the median as the threshold).
+                          versus high expression of the gene of interest.
+                          <ul>
+                            <li>
+                              "Low" is defined as lower than Q1 while "high" is
+                              defined as higher than Q3 of the gene expression
+                              of the <b>tumor samples</b>.
+                            </li>
+                          </ul>
                         </li>
                         <li>Plot the Kaplan-Meier survival curves.</li>
                         <li>
                           Test for significant difference between these curves
                           using the <i>G<sup>&rho;</sup></i> family of
                           Harrington and Fleming tests.
+                        </li>
+                        <li>
+                          Perform Cox proportional hazards regression analysis.
                         </li>
                       </ul>
                     </li>
@@ -672,38 +683,38 @@
             </td>
             <td>
               <a
-                href="8.1. Survival Analysis - TCGA - Necroptosis - Unique Genes.nb.html"
+                href="8.1.1. Survival Analysis - TCGA - Necroptosis - Unique Genes - Tumor.nb.html"
                 target="_blank"
                 >Necroptosis</a
               >
               <br />
               <a
-                href="8.2. Survival Analysis - TCGA - Ferroptosis - Unique Genes.nb.html"
+                href="8.2.1. Survival Analysis - TCGA - Ferroptosis - Unique Genes - Tumor.nb.html"
                 target="_blank"
                 >Ferroptosis</a
               >
               <br />
               <a
-                href="8.3. Survival Analysis - TCGA - Pyroptosis - Unique Genes.nb.html"
+                href="8.3.1. Survival Analysis - TCGA - Pyroptosis - Unique Genes - Tumor.nb.html"
                 target="_blank"
                 >Pyroptosis</a
               >
             </td>
             <td>
               <a
-                href="https://github.com/bioinfodlsu/regulated-cell-death-playground/blob/main/8.1.%20Survival%20Analysis%20-%20TCGA%20-%20Necroptosis%20-%20Unique%20Genes.Rmd"
+                href="https://github.com/bioinfodlsu/regulated-cell-death-playground/blob/main/8.1.1.%20Survival%20Analysis%20-%20TCGA%20-%20Necroptosis%20-%20Unique%20Genes%20-%20Tumor.Rmd"
                 target="_blank"
                 >Necroptosis</a
               >
               <br />
               <a
-                href="https://github.com/bioinfodlsu/regulated-cell-death-playground/blob/main/8.2.%20Survival%20Analysis%20-%20TCGA%20-%20Ferroptosis%20-%20Unique%20Genes.Rmd"
+                href="https://github.com/bioinfodlsu/regulated-cell-death-playground/blob/main/8.2.1.%20Survival%20Analysis%20-%20TCGA%20-%20Ferroptosis%20-%20Unique%20Genes%20-%20Tumor.Rmd"
                 target="_blank"
                 >Ferroptosis</a
               >
               <br />
               <a
-                href="https://github.com/bioinfodlsu/regulated-cell-death-playground/blob/main/8.3.%20Survival%20Analysis%20-%20TCGA%20-%20Pyroptosis%20-%20Unique%20Genes.Rmd"
+                href="https://github.com/bioinfodlsu/regulated-cell-death-playground/blob/main/8.3.1.%20Survival%20Analysis%20-%20TCGA%20-%20Pyroptosis%20-%20Unique%20Genes%20-%20Tumor.Rmd"
                 target="_blank"
                 >Pyroptosis</a
               >
