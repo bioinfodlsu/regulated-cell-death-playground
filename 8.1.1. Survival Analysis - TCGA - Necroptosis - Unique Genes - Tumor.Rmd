@@ -412,7 +412,7 @@ compute_survival_diff <- function(gene_df) {
 
 Perform survival analysis by testing for the difference in the Kaplan-Meier curves using the G-rho family of Harrington and Fleming tests: https://rdrr.io/cran/survival/man/survdiff.html
 
-Our genes of interest are MLKL (the primary executor of necroptosis) and the differentially expressed genes.
+MLKL is the primary executor of necroptosis.
 
 ```{r}
 significant_projects <- c()
