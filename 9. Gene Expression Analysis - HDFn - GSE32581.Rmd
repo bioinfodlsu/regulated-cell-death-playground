@@ -48,7 +48,7 @@ hdfn.expression
 Map the Illumina probe IDs to Ensembl accessions.
 
 ```{r}
-illumina_to_ensembl = data.frame(gene_id=unlist(mget(x = hdfn.expression[["ID_REF"]], envir = illuminaHumanv4ENSEMBL)))
+illumina_to_ensembl <- data.frame(gene_id = unlist(mget(x = hdfn.expression[["ID_REF"]], envir = illuminaHumanv4ENSEMBL)))
 illumina_to_ensembl <- rownames_to_column(illumina_to_ensembl, "ID_REF")
 illumina_to_ensembl
 ```
@@ -85,23 +85,25 @@ tpm.df <- hdfn.expression %>% dplyr::filter(gene_id %in% genes$gene_id)
 tpm.df <- left_join(tpm.df, genes %>% dplyr::select(gene_id, gene), by = c("gene_id" = "gene_id"))
 tpm.df <- distinct(tpm.df, gene, .keep_all = TRUE)
 rownames(tpm.df) <- tpm.df$gene
-tpm.df <- subset(tpm.df, select = -c(gene_id, ID_REF, gene) )
-tpm.df <- tpm.df[ order(row.names(tpm.df)), , drop = FALSE]
+tpm.df <- subset(tpm.df, select = -c(gene_id, ID_REF, gene))
+tpm.df <- tpm.df[order(row.names(tpm.df)), , drop = FALSE]
 tpm.df
 ```
 
 Plot the results.
 
-**NOTE: `VALUE` and `VALUE1` are the same. This is just a workaround since R's `heatmap.2` requires the heatmap to be at least two columns.**
+**NOTE: `VALUE` and `VALUE1` are the same. This is just a workaround since R's `heatmap.2` requires the heatmap to have at least two columns.**
 
 ```{r, fig.height=30, fig.width=10}
-tpm.df[["VALUE1"]] = tpm.df[["VALUE"]]
+tpm.df[["VALUE1"]] <- tpm.df[["VALUE"]]
 tpm.matrix <- as.matrix(tpm.df)
-heatmap.2(tpm.matrix, srtCol=360, 
-          cellnote = tpm.matrix, 
-          dendrogram="none", Colv=FALSE, Rowv=FALSE,
-          col=brewer.pal(n = 9, name = "BuPu")[5:9], trace="none", key = FALSE, lwid=c(0.1,4), lhei=c(0.1,4),
-          cexCol=1, cexRow=0.75, symm = TRUE)
+heatmap.2(tpm.matrix,
+  srtCol = 360,
+  cellnote = tpm.matrix,
+  dendrogram = "none", Colv = FALSE, Rowv = FALSE,
+  col = brewer.pal(n = 9, name = "BuPu")[5:9], trace = "none", key = FALSE, lwid = c(0.1, 4), lhei = c(0.1, 4),
+  cexCol = 1, cexRow = 0.75, symm = TRUE
+)
 ```
 ### Ferroptosis
 
@@ -122,23 +124,25 @@ tpm.df <- hdfn.expression %>% dplyr::filter(gene_id %in% genes$gene_id)
 tpm.df <- left_join(tpm.df, genes %>% dplyr::select(gene_id, gene), by = c("gene_id" = "gene_id"))
 tpm.df <- distinct(tpm.df, gene, .keep_all = TRUE)
 rownames(tpm.df) <- tpm.df$gene
-tpm.df <- subset(tpm.df, select = -c(gene_id, ID_REF, gene) )
-tpm.df <- tpm.df[ order(row.names(tpm.df)), , drop = FALSE]
+tpm.df <- subset(tpm.df, select = -c(gene_id, ID_REF, gene))
+tpm.df <- tpm.df[order(row.names(tpm.df)), , drop = FALSE]
 tpm.df
 ```
 
 Plot the results.
 
-**NOTE: `VALUE` and `VALUE1` are the same. This is just a workaround since R's `heatmap.2` requires the heatmap to be at least two columns.**
+**NOTE: `VALUE` and `VALUE1` are the same. This is just a workaround since R's `heatmap.2` requires the heatmap to have at least two columns.**
 
 ```{r, fig.height=150, fig.width=10}
-tpm.df[["VALUE1"]] = tpm.df[["VALUE"]]
+tpm.df[["VALUE1"]] <- tpm.df[["VALUE"]]
 tpm.matrix <- as.matrix(tpm.df)
-heatmap.2(tpm.matrix, srtCol=360, 
-          cellnote = tpm.matrix, 
-          dendrogram="none", Colv=FALSE, Rowv=FALSE,
-          col=brewer.pal(n = 9, name = "BuPu")[5:9], trace="none", key = FALSE, lwid=c(0.1,4), lhei=c(0.1,4),
-          cexCol=1, cexRow=0.75, symm = TRUE)
+heatmap.2(tpm.matrix,
+  srtCol = 360,
+  cellnote = tpm.matrix,
+  dendrogram = "none", Colv = FALSE, Rowv = FALSE,
+  col = brewer.pal(n = 9, name = "BuPu")[5:9], trace = "none", key = FALSE, lwid = c(0.1, 4), lhei = c(0.1, 4),
+  cexCol = 1, cexRow = 0.75, symm = TRUE
+)
 ```
 
 ### Pyroptosis
@@ -160,21 +164,23 @@ tpm.df <- hdfn.expression %>% dplyr::filter(gene_id %in% genes$gene_id)
 tpm.df <- left_join(tpm.df, genes %>% dplyr::select(gene_id, gene), by = c("gene_id" = "gene_id"))
 tpm.df <- distinct(tpm.df, gene, .keep_all = TRUE)
 rownames(tpm.df) <- tpm.df$gene
-tpm.df <- subset(tpm.df, select = -c(gene_id, ID_REF, gene) )
-tpm.df <- tpm.df[ order(row.names(tpm.df)), , drop = FALSE]
+tpm.df <- subset(tpm.df, select = -c(gene_id, ID_REF, gene))
+tpm.df <- tpm.df[order(row.names(tpm.df)), , drop = FALSE]
 tpm.df
 ```
 
 Plot the results.
 
-**NOTE: `VALUE` and `VALUE1` are the same. This is just a workaround since R's `heatmap.2` requires the heatmap to be at least two columns.**
+**NOTE: `VALUE` and `VALUE1` are the same. This is just a workaround since R's `heatmap.2` requires the heatmap to have at least two columns.**
 
 ```{r, fig.height=20, fig.width=10}
-tpm.df[["VALUE1"]] = tpm.df[["VALUE"]]
+tpm.df[["VALUE1"]] <- tpm.df[["VALUE"]]
 tpm.matrix <- as.matrix(tpm.df)
-heatmap.2(tpm.matrix, srtCol=360, 
-          cellnote = tpm.matrix, 
-          dendrogram="none", Colv=FALSE, Rowv=FALSE,
-          col=brewer.pal(n = 9, name = "BuPu")[5:9], trace="none", key = FALSE, lwid=c(0.1,4), lhei=c(0.1,4),
-          cexCol=1, cexRow=0.75, symm = TRUE)
+heatmap.2(tpm.matrix,
+  srtCol = 360,
+  cellnote = tpm.matrix,
+  dendrogram = "none", Colv = FALSE, Rowv = FALSE,
+  col = brewer.pal(n = 9, name = "BuPu")[5:9], trace = "none", key = FALSE, lwid = c(0.1, 4), lhei = c(0.1, 4),
+  cexCol = 1, cexRow = 0.75, symm = TRUE
+)
 ```
