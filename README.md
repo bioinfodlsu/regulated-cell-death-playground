@@ -4,7 +4,7 @@ Collection of analysis scripts and notebooks related to regulated cell death
 
 ## 🚀 Quick Start
 
-Visit [http://bioinfodlsu.com/rcd-playground/](http://bioinfodlsu.com/rcd-playground/) for a description of the analysis notebooks.
+Visit [https://bioinfodlsu.com/regulated-cell-death-playground/](https://bioinfodlsu.com/regulated-cell-death-playground/) for a description of the analysis notebooks.
 
 If you want to replicate the analyses:
 1. Install R.
