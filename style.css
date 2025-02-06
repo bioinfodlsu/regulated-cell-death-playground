@@ -1,0 +1,8 @@
+.nav-link {
+    color: var(--bs-body-color) !important;
+}
+
+.dt-search {
+    text-align: right;
+    margin-bottom: 1em;
+}
