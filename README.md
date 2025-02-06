@@ -20,7 +20,7 @@ The analyses and results can be viewed at https://bioinfodlsu.com/regulated-cell
 
 #### Setting up Dependencies
 
-## B. Downstream Analysis
+### B. Downstream Analysis
 
 #### Requirements
 
@@ -33,7 +33,7 @@ The analyses and results can be viewed at https://bioinfodlsu.com/regulated-cell
 1. Set up the R dependencies:
 
    - Most IDEs, such as [RStudio](https://posit.co/download/rstudio-desktop/), will automatically prompt you to install the required dependencies when you open a notebook. These dependencies are typically downloaded via [CRAN](https://cran.r-project.org/).
-   - However, some bioinformatics-specific dependencies are not available at CRAN and have to be downloaded using Bioconductor. To download these dependencies in one go, run `install-dependencies.r`
+   - However, some bioinformatics-specific dependencies are not available at CRAN and have to be downloaded via [Bioconductor](https://www.bioconductor.org/). To download them in one go, run `install-dependencies.r`
 
 1. Set up the Python dependencies:
 
