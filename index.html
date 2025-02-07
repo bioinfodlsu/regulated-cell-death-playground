@@ -27,6 +27,14 @@
           paging: false,
         });
       });
+
+      $(document).ready(function () {
+        $("#public-cancer-dataset-tbl").DataTable({
+          dom: "frtip",
+          info: false,
+          paging: false,
+        });
+      });
     </script>
   </head>
 
@@ -65,15 +73,15 @@
 
       <ul class="nav nav-tabs" role="tablist">
         <li class="nav-item">
-          <a
-            class="nav-link active"
-            data-bs-toggle="tab"
-            href="#public-cell-line-data"
+          <a class="nav-link" data-bs-toggle="tab" href="#public-cell-line-data"
             >Public Cell Line Data</a
           >
         </li>
         <li class="nav-item">
-          <a class="nav-link" data-bs-toggle="tab" href="#public-cancer-dataset"
+          <a
+            class="nav-link active"
+            data-bs-toggle="tab"
+            href="#public-cancer-dataset"
             >Public Cancer Dataset</a
           >
         </li>
@@ -85,7 +93,7 @@
       </ul>
 
       <div class="tab-content pt-4">
-        <div id="public-cell-line-data" class="tab-pane active">
+        <div id="public-cell-line-data" class="tab-pane">
           <table class="table table-striped" id="public-cell-line-data-tbl">
             <thead>
               <tr class="table-dark">
@@ -101,7 +109,7 @@
                 <td>1</td>
                 <td>
                   Gene Expression Analysis <br />
-                  Human dermal fibroblasts, neonatal (HDFn) <br />
+                  Human Dermal Fibroblasts, Neonatal (HDFn) <br />
                   GSE32581
                   <br />
                   Necroptosis, Ferroptosis & Pyroptosis
@@ -161,7 +169,7 @@
                 <td>2</td>
                 <td>
                   Gene Expression Analysis <br />
-                  Human dermal fibroblasts, neonatal (HDFn) <br />
+                  Human Dermal Fibroblasts, Neonatal (HDFn) <br />
                   GSE84144
                   <br />
                   Necroptosis, Ferroptosis & Pyroptosis
@@ -229,7 +237,7 @@
                 <td>3</td>
                 <td>
                   Gene Expression Analysis <br />
-                  Fetal colon cell line (FHC) <br />
+                  Fetal Colon Cell Line (FHC) <br />
                   GSE232211 <br />
                   Necroptosis, Ferroptosis & Pyroptosis
                 </td>
@@ -266,11 +274,7 @@
                     <li>
                       Download RCD gene sets for necroptosis, ferroptosis, and
                       pyroptosis from
-                      <b
-                        ><a href="http://chenyclab.com/RCDdb/index.html"
-                          >RCDdb</a
-                        ></b
-                      >.
+                      <a href="http://chenyclab.com/RCDdb/index.html">RCDdb</a>.
                     </li>
                     <li>
                       For each RCD type:
@@ -302,7 +306,466 @@
           </table>
         </div>
 
-        <div id="public-cancer-dataset" class="tab-pane fade">Hello</div>
+        <div id="public-cancer-dataset" class="tab-pane active">
+          <table class="table table-striped" id="public-cancer-dataset-tbl">
+            <thead>
+              <tr class="table-dark">
+                <th></th>
+                <th>Analysis</th>
+                <th>Description</th>
+                <th>Results</th>
+                <th>Code</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>1</td>
+                <td>Exploratory Data Analysis</td>
+                <td>
+                  <ol style="margin-left: -1em">
+                    <li>
+                      Download TPM data from the
+                      <a href="https://gtexportal.org/home/"
+                        >Genotype-Tissue Expression (GTEx) Portal</a
+                      >.
+                    </li>
+                    <li>Filter data to include to those from colon tissues.</li>
+                    <li>
+                      Download RCD gene sets from the
+                      <a
+                        href="https://www.gsea-msigdb.org/gsea/msigdb/collections.jsp"
+                        >Human MSigDB Collections</a
+                      >:
+                      <ul>
+                        <li>
+                          Necroptosis: From
+                          <a
+                            href="https://www.gsea-msigdb.org/gsea/msigdb/human/geneset/GOBP_NECROPTOTIC_SIGNALING_PATHWAY.html"
+                            >Gene Ontology</a
+                          >
+                        </li>
+                        <li>
+                          Ferroptosis: From
+                          <a
+                            href="https://www.gsea-msigdb.org/gsea/msigdb/human/geneset/WP_FERROPTOSIS.html"
+                            >WikiPathways</a
+                          >
+                        </li>
+                        <li>
+                          Pyroptosis: From
+                          <a
+                            href="https://www.gsea-msigdb.org/gsea/msigdb/human/geneset/REACTOME_PYROPTOSIS.html"
+                            >Reactome</a
+                          >
+                        </li>
+                      </ul>
+                    </li>
+                    <li>
+                      Plot the median TPM value per RCD-related gene for each
+                      RCD type.
+                    </li>
+                  </ol>
+                </td>
+                <td>
+                  <a
+                    href="downstream-analysis/1. Exploratory Data Analysis - MSigDB Gene Sets + GTEx TPM.nb.html"
+                    target="_blank"
+                    >Results</a
+                  >
+                </td>
+                <td>
+                  <a
+                    href="https://github.com/bioinfodlsu/regulated-cell-death-playground/blob/main/downstream-analysis/1.%20Exploratory%20Data%20Analysis%20-%20MSigDB%20Gene%20Sets%20%2B%20GTEx%20TPM.Rmd"
+                    target="_blank"
+                    >Code</a
+                  >
+                </td>
+              </tr>
+              <tr>
+                <td>2</td>
+                <td>
+                  Differential Gene Expression Analysis <br />
+                  Colorectal Cancer
+                  <br />
+                  Necroptosis, Ferroptosis & Pyroptosis
+                </td>
+                <td>
+                  <ol style="margin-left: -1em">
+                    <li>
+                      Download RNA-seq data from
+                      <a
+                        href="https://www.cancer.gov/ccg/research/genome-sequencing/tcga"
+                        >The Cancer Genome Atlas (TCGA)</a
+                      >.
+                    </li>
+                    <li>
+                      Filter data to include normal and malignant pairs from
+                      TCGA-COAD.
+                    </li>
+                    <li>
+                      Download RCD gene sets from the
+                      <a
+                        href="https://www.gsea-msigdb.org/gsea/msigdb/collections.jsp"
+                        >Human MSigDB Collections</a
+                      >:
+                      <ul>
+                        <li>
+                          Necroptosis: From
+                          <a
+                            href="https://www.gsea-msigdb.org/gsea/msigdb/human/geneset/GOBP_NECROPTOTIC_SIGNALING_PATHWAY.html"
+                            >Gene Ontology</a
+                          >
+                        </li>
+                        <li>
+                          Ferroptosis: From
+                          <a
+                            href="https://www.gsea-msigdb.org/gsea/msigdb/human/geneset/WP_FERROPTOSIS.html"
+                            >WikiPathways</a
+                          >
+                        </li>
+                        <li>
+                          Pyroptosis: From
+                          <a
+                            href="https://www.gsea-msigdb.org/gsea/msigdb/human/geneset/REACTOME_PYROPTOSIS.html"
+                            >Reactome</a
+                          >
+                        </li>
+                      </ul>
+                    </li>
+                    <li>
+                      For each RCD type:
+                      <ul>
+                        <li>
+                          Filter the count matrix to include only genes related
+                          to the RCD type of interest.
+                        </li>
+                        <li>
+                          Perform differential gene expression analysis using
+                          <a
+                            href="https://bioconductor.org/packages/release/bioc/html/DESeq2.html"
+                            >DESeq2</a
+                          >.
+                        </li>
+                      </ul>
+                    </li>
+                  </ol>
+                </td>
+                <td>
+                  <a
+                    href="downstream-analysis/2. Differential Gene Expression Analysis - TCGA.nb.html"
+                    target="_blank"
+                    >Results</a
+                  >
+                </td>
+                <td>
+                  <a
+                    href="https://github.com/bioinfodlsu/regulated-cell-death-playground/blob/main/downstream-analysis/2.%20Differential%20Gene%20Expression%20Analysis%20-%20TCGA.Rmd"
+                    target="_blank"
+                    >Code</a
+                  >
+                </td>
+              </tr>
+              <tr>
+                <td>3</td>
+                <td>
+                  Differential miRNA Expression Analysis <br />
+                  Colorectal Cancer
+                  <br />
+                  Necroptosis, Ferroptosis & Pyroptosis
+                </td>
+                <td>
+                  <ol style="margin-left: -1em">
+                    <li>
+                      Download miRNA expression data from
+                      <a
+                        href="https://www.cancer.gov/ccg/research/genome-sequencing/tcga"
+                        >The Cancer Genome Atlas (TCGA)</a
+                      >.
+                    </li>
+                    <li>
+                      Filter data to include normal and malignant pairs from
+                      TCGA-COAD.
+                    </li>
+                    <li>
+                      Download RCD gene sets from the
+                      <a
+                        href="https://www.gsea-msigdb.org/gsea/msigdb/collections.jsp"
+                        >Human MSigDB Collections</a
+                      >:
+                      <ul>
+                        <li>
+                          Necroptosis: From
+                          <a
+                            href="https://www.gsea-msigdb.org/gsea/msigdb/human/geneset/GOBP_NECROPTOTIC_SIGNALING_PATHWAY.html"
+                            >Gene Ontology</a
+                          >
+                        </li>
+                        <li>
+                          Ferroptosis: From
+                          <a
+                            href="https://www.gsea-msigdb.org/gsea/msigdb/human/geneset/WP_FERROPTOSIS.html"
+                            >WikiPathways</a
+                          >
+                        </li>
+                        <li>
+                          Pyroptosis: From
+                          <a
+                            href="https://www.gsea-msigdb.org/gsea/msigdb/human/geneset/REACTOME_PYROPTOSIS.html"
+                            >Reactome</a
+                          >
+                        </li>
+                      </ul>
+                    </li>
+                    <li>
+                      Map miRNAs to target mRNAs using
+                      <a href="https://mirdb.org/">miRDB</a>.
+                    </li>
+                    <li>
+                      For each RCD type:
+                      <ul>
+                        <li>
+                          Filter the count matrix to include only miRNAs that
+                          target genes related to the RCD type of interest.
+                        </li>
+                        <li>
+                          Perform differential gene expression analysis using
+                          <a
+                            href="https://bioconductor.org/packages/release/bioc/html/DESeq2.html"
+                            >DESeq2</a
+                          >.
+                        </li>
+                      </ul>
+                    </li>
+                  </ol>
+                </td>
+                <td>
+                  <a
+                    href="downstream-analysis/3. Differential miRNA Expression Analysis - TCGA.nb.html"
+                    target="_blank"
+                    >Results</a
+                  >
+                </td>
+                <td>
+                  <a
+                    href="https://github.com/bioinfodlsu/regulated-cell-death-playground/blob/main/downstream-analysis/3.%20Differential%20miRNA%20Expression%20Analysis%20-%20TCGA.Rmd"
+                    target="_blank"
+                    >Code</a
+                  >
+                </td>
+              </tr>
+              <tr>
+                <td>4</td>
+                <td>
+                  Differential Gene Expression Analysis <br />
+                  Pan-Cancer (Partial)
+                  <br />
+                  Necroptosis, Ferroptosis & Pyroptosis
+                </td>
+                <td>
+                  <ol style="margin-left: -1em">
+                    <li>
+                      Download RNA-seq data from
+                      <a
+                        href="https://www.cancer.gov/ccg/research/genome-sequencing/tcga"
+                        >The Cancer Genome Atlas (TCGA)</a
+                      >.
+                    </li>
+                    <li>
+                      Filter data to include normal and malignant pairs from
+                      multiple TCGA studies.
+                    </li>
+                    <li>
+                      Download RCD gene sets from the
+                      <a
+                        href="https://www.gsea-msigdb.org/gsea/msigdb/collections.jsp"
+                        >Human MSigDB Collections</a
+                      >:
+                      <ul>
+                        <li>
+                          Necroptosis: From
+                          <a
+                            href="https://www.gsea-msigdb.org/gsea/msigdb/human/geneset/GOBP_NECROPTOTIC_SIGNALING_PATHWAY.html"
+                            >Gene Ontology</a
+                          >
+                        </li>
+                        <li>
+                          Ferroptosis: From
+                          <a
+                            href="https://www.gsea-msigdb.org/gsea/msigdb/human/geneset/WP_FERROPTOSIS.html"
+                            >WikiPathways</a
+                          >
+                        </li>
+                        <li>
+                          Pyroptosis: From
+                          <a
+                            href="https://www.gsea-msigdb.org/gsea/msigdb/human/geneset/REACTOME_PYROPTOSIS.html"
+                            >Reactome</a
+                          >
+                        </li>
+                      </ul>
+                    </li>
+                    <li>
+                      For each RCD type:
+                      <ul>
+                        <li>
+                          Filter the count matrix to include only genes related
+                          to the RCD type of interest.
+                        </li>
+                        <li>
+                          Perform differential gene expression analysis using
+                          <a
+                            href="https://bioconductor.org/packages/release/bioc/html/DESeq2.html"
+                            >DESeq2</a
+                          >.
+                        </li>
+                      </ul>
+                    </li>
+                  </ol>
+                </td>
+                <td>
+                  <a
+                    href="downstream-analysis/4. Differential Gene Expression Analysis - TCGA - Pan-cancer.nb.html"
+                    target="_blank"
+                    >Results</a
+                  >
+                </td>
+                <td>
+                  <a
+                    href="https://github.com/bioinfodlsu/regulated-cell-death-playground/blob/main/downstream-analysis/4.%20Differential%20Gene%20Expression%20Analysis%20-%20TCGA%20-%20Pan-cancer.Rmd"
+                    target="_blank"
+                    >Code</a
+                  >
+                </td>
+              </tr>
+              <tr>
+                <td>5</td>
+                <td>
+                  Differential Gene Expression Analysis <br />
+                  Pan-Cancer (Partial)
+                  <br />
+                  Multiple RCD Types (Including NETosis, Cuproptosis, etc.)
+                </td>
+                <td>
+                  <ol style="margin-left: -1em">
+                    <li>
+                      Download RNA-seq data from
+                      <a
+                        href="https://www.cancer.gov/ccg/research/genome-sequencing/tcga"
+                        >The Cancer Genome Atlas (TCGA)</a
+                      >.
+                    </li>
+                    <li>
+                      Filter data to include normal and malignant pairs from
+                      multiple TCGA studies.
+                    </li>
+                    <li>
+                      Download RCD gene sets for all the RCD types in
+                      <a href="http://chenyclab.com/RCDdb/index.html">RCDdb</a>.
+                    </li>
+                    <li>
+                      For each RCD type:
+                      <ul>
+                        <li>
+                          Filter the count matrix to include only genes related
+                          to the RCD type of interest.
+                        </li>
+                        <li>
+                          Perform differential gene expression analysis using
+                          <a
+                            href="https://bioconductor.org/packages/release/bioc/html/DESeq2.html"
+                            >DESeq2</a
+                          >.
+                        </li>
+                      </ul>
+                    </li>
+                  </ol>
+                </td>
+                <td>
+                  <a
+                    href="downstream-analysis/5. Differential Gene Expression Analysis - TCGA - Pan-cancer - More RCD Types.nb.html"
+                    target="_blank"
+                    >Results</a
+                  >
+                </td>
+                <td>
+                  <a
+                    href="https://github.com/bioinfodlsu/regulated-cell-death-playground/blob/main/downstream-analysis/5.%20Differential%20Gene%20Expression%20Analysis%20-%20TCGA%20-%20Pan-cancer%20-%20More%20RCD%20Types.Rmd"
+                    target="_blank"
+                    >Code</a
+                  >
+                </td>
+              </tr>
+              <tr>
+                <td>6</td>
+                <td>
+                  Differential Gene Expression Analysis <br />
+                  Pan-Cancer (Complete)
+                  <br />
+                  Necroptosis, Ferroptosis & Pyroptosis
+                  <br />
+                  Unique Genes
+                </td>
+                <td>
+                  <ol style="margin-left: -1em">
+                    <li>
+                      Download RNA-seq data from
+                      <a
+                        href="https://www.cancer.gov/ccg/research/genome-sequencing/tcga"
+                        >The Cancer Genome Atlas (TCGA)</a
+                      >.
+                    </li>
+                    <li>
+                      Filter data to include normal and malignant pairs from all
+                      TCGA studies in this
+                      <a
+                        href="https://gdc.cancer.gov/resources-tcga-users/tcga-code-tables/tcga-study-abbreviations"
+                        >list</a
+                      >.
+                    </li>
+                    <li>
+                      Download RCD gene sets for necroptosis, ferroptosis, and
+                      pyroptosis in
+                      <a href="http://chenyclab.com/RCDdb/index.html">RCDdb</a>.
+                    </li>
+                    <li>
+                      For each RCD type:
+                      <ul>
+                        <li>
+                          Get only the genes unique to the RCD type of interest.
+                        </li>
+                        <li>
+                          Filter the count matrix to include only genes related
+                          to the RCD type of interest.
+                        </li>
+                        <li>
+                          Perform differential gene expression analysis using
+                          <a
+                            href="https://bioconductor.org/packages/release/bioc/html/DESeq2.html"
+                            >DESeq2</a
+                          >.
+                        </li>
+                      </ul>
+                    </li>
+                  </ol>
+                </td>
+                <td>
+                  <a
+                    href="downstream-analysis/7. Differential Gene Expression Analysis - TCGA - Pan-cancer - Unique Genes.nb.html"
+                    target="_blank"
+                    >Results</a
+                  >
+                </td>
+                <td>
+                  <a
+                    href="https://github.com/bioinfodlsu/regulated-cell-death-playground/blob/main/downstream-analysis/7.%20Differential%20Gene%20Expression%20Analysis%20-%20TCGA%20-%20Pan-cancer%20-%20Unique%20Genes.Rmd"
+                    target="_blank"
+                    >Code</a
+                  >
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
       </div>
     </div>
   </body>
