@@ -66,13 +66,13 @@ def main(rcd_dir, unique_genes_dir):
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument(
-        "--rcd-gene-list",
+        "--rcd-gene-list-dir",
         help="path to the directory containing the list of RCD-related genes",
     )
     parser.add_argument(
-        "--output",
+        "--output-dir",
         help="path to the output directory that will store the unique genes per RCD type",
     )
 
     args = parser.parse_args()
-    main(args.rcd_gene_list, args.output)
+    main(args.rcd_gene_list_dir, args.output_dir)
