@@ -49,7 +49,5 @@ po/*~
 rsconnect/
 
 # Data files
-*/data/
-*/GDCdata/
-*/MANIFEST.txt
-patient-data/
+data/
+plots/
