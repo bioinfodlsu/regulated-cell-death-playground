@@ -96,7 +96,12 @@ query_coad <- GDCquery(
 If this is your first time running this notebook (i.e., you have not yet downloaded the results of the query in the previous block), uncomment the code block below.
 
 ```{r, message=FALSE}
-# GDCdownload(query_coad)
+GDC_DIR = "../data/public/GDCdata"
+
+# GDCdownload(
+#   query_coad,
+#   directory = GDC_DIR
+# )
 ```
 
 Running the code block above should generate and populate a directory named `GDCdata`.
@@ -106,7 +111,11 @@ Running the code block above should generate and populate a directory named `GDC
 Construct the RNA-seq count matrix.
 
 ```{r, message=FALSE, echo = TRUE, results="hide"}
-tcga_coad_data <- GDCprepare(query_coad, summarizedExperiment = TRUE)
+tcga_coad_data <- GDCprepare(
+  query_coad, 
+  directory = GDC_DIR,
+  summarizedExperiment = TRUE
+)
 ```
 
 ```{r}

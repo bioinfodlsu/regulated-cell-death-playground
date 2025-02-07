@@ -92,7 +92,12 @@ query_coad <- GDCquery(
 If this is your first time running this notebook (i.e., you have not yet downloaded the results of the query in the previous block), uncomment the code block below.
 
 ```{r, message=FALSE}
-# GDCdownload(query_coad)
+GDC_DIR = "../data/public/GDCdata"
+
+# GDCdownload(
+#   query_coad,
+#   directory = GDC_DIR
+# )
 ```
 
 Running the code block above should generate and populate a directory named `GDCdata`.
@@ -102,7 +107,11 @@ Running the code block above should generate and populate a directory named `GDC
 Construct the RNA-seq count matrix.
 
 ```{r, echo = TRUE, results="hide"}
-tcga_coad_data <- GDCprepare(query_coad, summarizedExperiment = TRUE)
+tcga_coad_data <- GDCprepare(
+  query_coad, 
+  directory = GDC_DIR,
+  summarizedExperiment = TRUE
+)
 ```
 
 ```{r}
@@ -266,7 +275,7 @@ rcd_refseq
 Write the RefSeq IDs of the mRNAs of interest to a file.
 
 ```{r, echo = TRUE, results="hide"}
-rcd_mrna_file <- "temp/necroptosis-genes-refseq.txt"
+rcd_mrna_file <- "../data/public/rcd-gene-list/refseq/necroptosis-genes-refseq.txt"
 rcd_refseq.unique_ids <- unique(unlist(rcd_refseq$refseq_mrna))
 rcd_refseq.unique_ids <- rcd_refseq.unique_ids[!sapply(rcd_refseq.unique_ids, identical, "")]
 
@@ -280,7 +289,7 @@ invisible(lapply(rcd_refseq.unique_ids, write, rcd_mrna_file, append = TRUE, nco
 
 Run the following Python script to fetch the miRNAs targeting the mRNAs of interest:
 ```
-python util/get-mirna.py --mrna-list temp/necroptosis-genes-refseq.txt --output temp/necroptosis-mirna.txt
+python util/get-mirna.py --mrna-list ../data/public/rcd-gene-list/refseq/necroptosis-genes-refseq.txt --output ../data/public/miRNA/necroptosis-mirna.txt
 ```
 
 Running this script should generate a file named `necroptosis-mirna.txt` inside the `temp` directory.
@@ -288,7 +297,7 @@ Running this script should generate a file named `necroptosis-mirna.txt` inside 
 Fetch the miRNAs from the said file.
 
 ```{r}
-necroptosis.mirna <- read.table("temp/necroptosis-mirna.txt")
+necroptosis.mirna <- read.table("../data/public/miRNA/necroptosis-mirna.txt")
 necroptosis.mirna <- unique(unlist(necroptosis.mirna$V1))
 ```
 
@@ -374,7 +383,7 @@ rcd_refseq
 Write the RefSeq IDs of the mRNAs of interest to a file.
 
 ```{r, echo = TRUE, results="hide"}
-rcd_mrna_file <- "temp/ferroptosis-genes-refseq.txt"
+rcd_mrna_file <- "../data/public/rcd-gene-list/refseq/ferroptosis-genes-refseq.txt"
 rcd_refseq.unique_ids <- unique(unlist(rcd_refseq$refseq_mrna))
 rcd_refseq.unique_ids <- rcd_refseq.unique_ids[!sapply(rcd_refseq.unique_ids, identical, "")]
 
@@ -396,7 +405,7 @@ Running this script should generate a file named `ferroptosis-mirna.txt` inside 
 Fetch the miRNAs from the said file.
 
 ```{r}
-ferroptosis.mirna <- read.table("temp/ferroptosis-mirna.txt")
+ferroptosis.mirna <- read.table("../data/public/miRNA/ferroptosis-mirna.txt")
 ferroptosis.mirna <- unique(unlist(ferroptosis.mirna$V1))
 ```
 
@@ -480,7 +489,7 @@ rcd_refseq
 Write the RefSeq IDs of the mRNAs of interest to a file.
 
 ```{r, echo = TRUE, results="hide"}
-rcd_mrna_file <- "temp/pyroptosis-genes-refseq.txt"
+rcd_mrna_file <- "../data/public/rcd-gene-list/refseq/pyroptosis-genes-refseq.txt"
 rcd_refseq.unique_ids <- unique(unlist(rcd_refseq$refseq_mrna))
 rcd_refseq.unique_ids <- rcd_refseq.unique_ids[!sapply(rcd_refseq.unique_ids, identical, "")]
 
@@ -503,7 +512,7 @@ Running this script should generate a file named `pyroptosis-mirna.txt` inside t
 Fetch the miRNAs from the said file.
 
 ```{r}
-pyroptosis.mirna <- read.table("temp/pyroptosis-mirna.txt")
+pyroptosis.mirna <- read.table("../data/public/miRNA/pyroptosis-mirna.txt")
 pyroptosis.mirna <- unique(unlist(pyroptosis.mirna$V1))
 ```
 

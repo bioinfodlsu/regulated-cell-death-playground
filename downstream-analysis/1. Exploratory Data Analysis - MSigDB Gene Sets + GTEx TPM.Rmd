@@ -30,7 +30,7 @@ library("grex")
 
 ### Constants
 ```{r}
-DATA_DIR <- "data/GTEx/"
+DATA_DIR <- "../data/public/GTEx/"
 ```
 
 ## II. Loading the GTEx annotations
@@ -40,9 +40,11 @@ DATA_DIR <- "data/GTEx/"
 
 Download these files by running:
 ```
-wget https://storage.googleapis.com/adult-gtex/annotations/v8/metadata-files/GTEx_Analysis_v8_Annotations_SampleAttributesDS.txt -P data/GTEx/
-wget https://storage.googleapis.com/adult-gtex/annotations/v8/metadata-files/GTEx_Analysis_v8_Annotations_SubjectPhenotypesDS.txt -P data/GTEx/
+wget https://storage.googleapis.com/adult-gtex/annotations/v8/metadata-files/GTEx_Analysis_v8_Annotations_SampleAttributesDS.txt -P ../data/public/GTEx/
+wget https://storage.googleapis.com/adult-gtex/annotations/v8/metadata-files/GTEx_Analysis_v8_Annotations_SubjectPhenotypesDS.txt -P ../data/public/GTEx/
 ```
+
+Make sure to replace `<DATA_DIR>`.
 
 ```{r}
 sample.df <- read.delim(paste0(DATA_DIR, "GTEx_Analysis_v8_Annotations_SampleAttributesDS.txt"), as.is = TRUE, header = TRUE, row.names = 1)
@@ -226,7 +228,7 @@ ggplot(gene.expressions.necro, aes(y = tissue, x = rownames(gene.expressions.nec
   ) +
   geom_text(aes(label = tpm), vjust = 1)
 ```
-**Sanity Check:** RIPK1 and necroptosis - https://www.nature.com/articles/s12276-022-00847-4
+**Quick validation:** RIPK1 and necroptosis - https://www.nature.com/articles/s12276-022-00847-4
 
 ### Ferroptosis
 
@@ -265,7 +267,7 @@ ggplot(gene.expressions.ferro, aes(y = tissue, x = rownames(gene.expressions.fer
     fill = "TPM"
   )
 ```
-**Sanity Check:** FTH1 and ferroptosis - https://www.nature.com/articles/s41420-022-00902-z
+**Quick validation:** FTH1 and ferroptosis - https://www.nature.com/articles/s41420-022-00902-z
 
 ### Pyroptosis
 
@@ -306,4 +308,4 @@ ggplot(gene.expressions.pyro, aes(y = tissue, x = rownames(gene.expressions.pyro
     fill = "TPM"
   )
 ```
-**Sanity Check:** CHMP4B and pyroptosis - https://pubmed.ncbi.nlm.nih.gov/38823000/
+**Quick validation:** CHMP4B and pyroptosis - https://pubmed.ncbi.nlm.nih.gov/38823000/
