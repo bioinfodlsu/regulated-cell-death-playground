@@ -50,6 +50,8 @@ Collection of analysis scripts and notebooks related to regulated cell death
 
 ## 🖇️ Running our dataset generation pipeline
 
+**Operating System:** Linux or Windows (using [WSL](https://learn.microsoft.com/en-us/windows/wsl/install))
+
 1. Install the package manager Conda. We recommend installing [Miniconda](https://docs.anaconda.com/miniconda/install/).
 1. Install the workflow management system [Snakemake](https://snakemake.readthedocs.io/en/stable/index.html) by running:
 
