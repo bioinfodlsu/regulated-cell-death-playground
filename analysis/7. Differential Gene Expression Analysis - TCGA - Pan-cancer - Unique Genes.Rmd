@@ -215,23 +215,9 @@ for (project in projects) {
 
 We obtain the gene sets from RCDdb: https://pmc.ncbi.nlm.nih.gov/articles/PMC11384979/
 
-Download the gene sets by running:
-
-```
-wget http://chenyclab.com/RCDdb/download/Necroptosis.csv -P ../data/public/rcd-gene-list/RCDdb/
-wget http://chenyclab.com/RCDdb/download/Ferroptosis.csv -P ../data/public/rcd-gene-list/RCDdb/
-wget http://chenyclab.com/RCDdb/download/Pyroptosis.csv -P ../data/public/rcd-gene-list/RCDdb/
-```
-
 Afterwards, filter the gene sets in order to retain only the genes unique to the RCD type of interest.
 
-This filtering step is handled by a separate Python script and can be performed by running:
-
-```
-python 7-get-unique-genes.py --rcd-gene-list-dir ../data/public/rcd-gene-list/RCDdb --output-dir ../data/public/rcd-gene-list/unique-genes/necroptosis-ferroptosis-pyroptosis
-```
-
-Running this script should generate and populate a directory inside `temp` named `unique_genes/necroptosis_ferroptosis_pyroptosis`. 
+This filtering step is already handled by the Snakemake workflow.
 
 ```{r}
 RCDdb <- "../data/public/rcd-gene-list/unique-genes/necroptosis-ferroptosis-pyroptosis/"
