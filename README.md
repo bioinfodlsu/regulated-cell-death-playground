@@ -5,37 +5,60 @@
 
 Collection of analysis scripts and notebooks related to regulated cell death
 
-The analyses and results can be viewed at https://bioinfodlsu.com/regulated-cell-death-playground/
+**The analyses and results can be viewed at https://bioinfodlsu.com/regulated-cell-death-playground/**
 
-## 🧪 Reproducing Our Results
+## 🧪 Reproducing our results
 
-### A. Read Mapping and Quantification
+### Cloning our repository
 
-#### Requirements
+1. Clone this repository by running:
 
-- **Operating system:** Linux or Windows (using [WSL](https://learn.microsoft.com/en-us/windows/wsl/install))
-- **Notes:**
-  - Our scripts for read mapping and quantification are written in Bash.
-  - Use `bash` (not `sh`) to run the scripts since we used some Bash-specific syntax for some of the scripts
+   ```
+   git clone https://github.com/bioinfodlsu/regulated-cell-death-playground
+   ```
 
-#### Setting up Dependencies
+### Downloading our dataset
 
-### B. Downstream Analysis
+1. Download our dataset from this [link](), and place it at the root of the cloned repository.
 
-#### Requirements
+   💡 If you want to verify the integrity of the downloaded dataset, compute the SHA-512 checksum of the downloaded zipped folder using a hashing utility like `certutil` in Windows, `shasum` in Mac, or `sha512sum` in Linux. You should obtain the following checksum:
 
-- **Operating system:** Linux, Windows, or macOS
-- **Notes:**
-  - Our downstream analysis scripts are written in Python and R. We have tested our scripts on Python 3.12 and R 4.4.1.
+   ```
+   <checksum>
+   ```
 
-#### Setting up Dependencies
+1. Extract the contents of the downloaded zipped folder. The extraction process should result in a folder named `data`, and inside it are two folders: `patient` and `public`.
 
-1. Set up the R dependencies:
+1. Verify that your folder structure is as follows:
 
-   - Most IDEs, such as [RStudio](https://posit.co/download/rstudio-desktop/), will automatically prompt you to install the required dependencies when you open a notebook. These dependencies are typically downloaded via [CRAN](https://cran.r-project.org/).
-   - However, some bioinformatics-specific dependencies are not available at CRAN and have to be downloaded via [Bioconductor](https://www.bioconductor.org/). To download them in one go, run `install-dependencies.r`
+   - `regulated-cell-death-playground` (root)
+     - `data`
+       - `patient`
+       - `public`
+     - `analysis`
 
-1. Set up the Python dependencies:
+**Note:** If you prefer to run the entire pipeline for generating our dataset (instead of simply downloading it), refer to this [section]().
+
+### Running our analysis scripts
+
+1. Our analysis scripts are inside the `analysis` folder. Refer to this [page](https://bioinfodlsu.com/regulated-cell-death-playground/) for a description of each analysis.
+
+   - For the scripts written in R:
+
+     - We have tested our scripts on R 4.4.1.
+     - To set up the dependencies, run `install-dependencies.r`
+
+   - For the scripts written in Python:
+     - We have tested our scripts on Python 3.12.
+
+## 🖇️ Running our dataset generation pipeline
+
+1. Install the package manager Conda. We recommend installing [Miniconda](https://docs.anaconda.com/miniconda/install/).
+1. Install the workflow management system [Snakemake](https://snakemake.readthedocs.io/en/stable/index.html) by running:
+
+   ```
+   conda create -c conda-forge -c bioconda -n snakemake snakemake
+   ```
 
 ## 💻 Authors
 
