@@ -1,0 +1,10 @@
+public_data_dir: "../../data/public"
+
+download_links:
+  GTEx:
+    sample_attributes: "https://storage.googleapis.com/adult-gtex/annotations/v8/metadata-files/GTEx_Analysis_v8_Annotations_SampleAttributesDS.txt"
+    subject_phenotypes: "https://storage.googleapis.com/adult-gtex/annotations/v8/metadata-files/GTEx_Analysis_v8_Annotations_SubjectPhenotypesDS.txt"
+    tpm: "https://storage.googleapis.com/adult-gtex/bulk-gex/v8/rna-seq/GTEx_Analysis_2017-06-05_v8_RNASeQCv1.1.9_gene_tpm.gct.gz"
+
+  RCDdb_download_links:
+    gene_lists: ["http://chenyclab.com/RCDdb/download/Necroptosis.csv"]

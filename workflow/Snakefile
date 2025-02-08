@@ -1,0 +1,3 @@
+configfile: "config.yaml"
+
+include: "rules/download-public-data.smk"
