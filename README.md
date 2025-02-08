@@ -37,13 +37,13 @@ Collection of analysis scripts and notebooks related to regulated cell death
        - `public`
      - `analysis`
 
-**Note:** If you prefer to run the entire pipeline for generating our dataset (instead of simply downloading it), refer to this [section]().
+**Note:** If you prefer to run the entire pipeline for generating our dataset (instead of simply downloading it), refer to this [section](https://github.com/bioinfodlsu/regulated-cell-death-playground?tab=readme-ov-file#%EF%B8%8F-running-our-dataset-generation-pipeline).
 
 ### Running our analysis scripts and notebooks
 
 1. Our analysis scripts and notebooks are written in R and found inside the `analysis` folder. Refer to this [page](https://bioinfodlsu.com/regulated-cell-death-playground/) for a description of each script/notebook.
 
-1. To set up the dependencies, run `install-dependencies.r`.
+1. To set up the dependencies, run `dependencies/install-dependencies.r`.
 
 **Note:** We tested our scripts on R 4.4.1.
 
