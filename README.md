@@ -36,6 +36,7 @@ Collection of analysis scripts and notebooks related to regulated cell death
        - `patient`
        - `public`
      - `analysis`
+     - ...
 
 **Note:** If you prefer to run the entire pipeline for generating our dataset (instead of simply downloading it), refer to this [section](https://github.com/bioinfodlsu/regulated-cell-death-playground?tab=readme-ov-file#%EF%B8%8F-running-our-dataset-generation-pipeline).
 
