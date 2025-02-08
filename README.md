@@ -45,7 +45,7 @@ Collection of analysis scripts and notebooks related to regulated cell death
 
 1. To set up the dependencies, run `dependencies/install-dependencies.r`.
 
-**Note:** We tested our scripts on R 4.4.1.
+**Note:** We tested our code on R 4.4.1.
 
 ## 🖇️ Running our dataset generation pipeline
 
