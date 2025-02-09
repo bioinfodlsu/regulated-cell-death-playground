@@ -29,7 +29,7 @@ Collection of analysis scripts and notebooks related to regulated cell death
 
    <details>
       <summary>Click to show/hide instructions for verifying the integrity of the downloaded dataset</summary> <br>
-      If you want to verify the integrity of the downloaded dataset, compute the SHA-512 checksum of the downloaded zipped folder using a hashing utility like `certutil` in Windows, `shasum` in Mac, or `sha512sum` in Linux. You should obtain the following checksum: <br> <br>
+      If you want to verify the integrity of the downloaded dataset, compute the SHA-512 checksum of the downloaded zipped folder using a hashing utility like <code>certutil</code> in Windows, <code>shasum</code> in Mac, or <code>sha512sum</code> in Linux. You should obtain the following checksum: <br> <br>
       <pre>checksum!</pre>
    </details>
 
