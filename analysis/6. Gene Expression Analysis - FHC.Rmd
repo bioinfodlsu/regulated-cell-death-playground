@@ -28,18 +28,13 @@ library("RColorBrewer")
 
 ### Constants
 ```{r}
-DATA_DIR <- "data/FHC/"
+DATA_DIR <- "../data/public/GEO/FHC/"
 ```
 
 ## Loading the Expression Data
 
 The expression data are taken from this study: https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE232211
 
-Download (1) the RNA-seq normalized counts matrix and (2) the human gene annotation table by running:
-```
-wget https://www.ncbi.nlm.nih.gov/geo/download/?type=rnaseq_counts&acc=GSE232211&format=file&file=GSE232211_norm_counts_TPM_GRCh38.p13_NCBI.tsv.gz -P data/FHC/
-wget https://www.ncbi.nlm.nih.gov/geo/download/?format=file&type=rnaseq_counts&file=Human.GRCh38.p13.annot.tsv.gz -P data/FHC/
-```
 ```{r}
 fhc.expression <- read.delim(paste0(DATA_DIR, "GSE232211_norm_counts_TPM_GRCh38.p13_NCBI.tsv"), as.is = TRUE, header = TRUE, row.names = 1)
 fhc.expression <- rownames_to_column(fhc.expression, "gene_id")
@@ -66,7 +61,7 @@ fhc.expression.mapped
 We load the gene sets from RCDdb: https://pubmed.ncbi.nlm.nih.gov/39257527/
 
 ```{r}
-RCDdb <- "data/RCDdb/"
+RCDdb <- "../data/public/rcd-gene-list/RCDdb/"
 ```
 
 ### Necroptosis

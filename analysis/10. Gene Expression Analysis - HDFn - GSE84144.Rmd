@@ -29,7 +29,7 @@ library("illuminaHumanv4.db")
 
 ### Constants
 ```{r}
-DATA_DIR <- "data/HDFn/"
+DATA_DIR <- "../data/public/GEO/HDFn/"
 ```
 
 ## Loading the Expression Data
@@ -84,7 +84,7 @@ hdfn.expression
 We load the gene sets from RCDdb: https://pubmed.ncbi.nlm.nih.gov/39257527/
 
 ```{r}
-RCDdb <- "data/RCDdb/"
+RCDdb <- "../data/public/rcd-gene-list/RCDdb/"
 ```
 
 ### Necroptosis
