@@ -37,6 +37,8 @@ Create a function for downloading TCGA gene expression data.
 For more detailed documentation, refer to `2. Differential Gene Expression Analysis - TCGA.Rmd`.
 
 ```{r}
+GDC_DIR = "../data/public/GDCdata"
+
 query_and_filter_samples <- function(project) {
   query_tumor <- GDCquery(
     project = project,
@@ -82,9 +84,12 @@ query_and_filter_samples <- function(project) {
   )
 
   # If this is your first time running this notebook (i.e., you have not yet downloaded the results of the query in the previous block),
-  # uncomment the line below
+  # uncomment the code block below
 
-  # GDCdownload(query_project)
+  # GDCdownload(
+  #   query_coad,
+  #   directory = GDC_DIR
+  # )
 
   return(list(samples = samples, query_project = query_project))
 }
@@ -128,7 +133,11 @@ tcga_matrix <- list()
 
 projects <- with_results_projects
 for (project in projects) {
-  tcga_data[[project]] <- GDCprepare(project_data[[project]], summarizedExperiment = TRUE)
+  tcga_data[[project]] <- GDCprepare(
+    project_data[[project]], 
+    directory = GDC_DIR,
+    summarizedExperiment = TRUE
+  )
 }
 ```
 
@@ -175,7 +184,7 @@ for (project in projects) {
 For more detailed documentation on obtaining the gene set, refer to `7. Differential Gene Expression Analysis - TCGA - Pan-cancer - Unique Genes.Rmd`.
 
 ```{r}
-RCDdb <- "temp/unique_genes/necroptosis_ferroptosis_pyroptosis/"
+RCDdb <- "../data/public/rcd-gene-list/unique-genes/necroptosis-ferroptosis-pyroptosis/"
 ```
 
 Write utility functions for filtering the gene sets, performing differential gene expression analysis, plotting the results, and performing variance-stabilizing transformation.
@@ -446,9 +455,9 @@ for (project in projects) {
     if(inherits(error, "error")) next
 
     if (nrow(gene_df) > 0) {
-      fit <- compute_surival_fit(gene_df)
       tryCatch (
         {
+          fit <- compute_surival_fit(gene_df)
           survival <- compute_survival_diff(gene_df)
           cox <- compute_cox(gene_df)
           print(ctr)
