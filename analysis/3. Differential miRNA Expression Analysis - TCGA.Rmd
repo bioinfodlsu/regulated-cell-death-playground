@@ -235,12 +235,6 @@ Refer to `1. Exploratory Data Analysis - MSigDB Gene Sets + GTEx TPM.Rmd` for mo
 
 We are going to refer to miRDB to for the miRNA-mRNA mapping: https://academic.oup.com/nar/article/48/D1/D127/5557729
 
-Download and uncompress miRDB v6.0 by running:
-```
-wget https://mirdb.org/download/miRDB_v6.0_prediction_result.txt.gz -P data/
-gzip -d miRDB_v6.0_prediction_result.txt.gz
-```
-
 The first column of the dataset lists the miRNAs, while the second column lists the mRNAs (more specifically, the RefSeq IDs of the mRNAs).
 However, our gene sets list the mRNAs of interest (i.e., those involved in regulated cell death) using their gene symbols. <br>
 Hence, we need to perform some preprocessing to convert the gene symbols to RefSeq IDs.
@@ -287,14 +281,7 @@ if (file.exists(rcd_mrna_file)) {
 invisible(lapply(rcd_refseq.unique_ids, write, rcd_mrna_file, append = TRUE, ncolumns = 1))
 ```
 
-Run the following Python script to fetch the miRNAs targeting the mRNAs of interest:
-```
-python util/get-mirna.py --mrna-list ../data/public/rcd-gene-list/refseq/necroptosis-genes-refseq.txt --output ../data/public/miRNA/necroptosis-mirna.txt
-```
-
-Running this script should generate a file named `necroptosis-mirna.txt` inside the `temp` directory.
-
-Fetch the miRNAs from the said file.
+Fetch the miRNAs targeting the mRNAs of interest.
 
 ```{r}
 necroptosis.mirna <- read.table("../data/public/miRNA/necroptosis-mirna.txt")
@@ -394,15 +381,8 @@ if (file.exists(rcd_mrna_file)) {
 
 invisible(lapply(rcd_refseq.unique_ids, write, rcd_mrna_file, append = TRUE, ncolumns = 1))
 ```
-Run the following Python script to fetch the miRNAs targeting the mRNAs of interest:
 
-```
-python util/get-mirna.py --mrna-list temp/ferroptosis-genes-refseq.txt --output temp/ferroptosis-mirna.txt
-```
-
-Running this script should generate a file named `ferroptosis-mirna.txt` inside the `temp` directory.
-
-Fetch the miRNAs from the said file.
+Fetch the miRNAs targeting the mRNAs of interest.
 
 ```{r}
 ferroptosis.mirna <- read.table("../data/public/miRNA/ferroptosis-mirna.txt")
@@ -501,15 +481,7 @@ if (file.exists(rcd_mrna_file)) {
 invisible(lapply(rcd_refseq.unique_ids, write, rcd_mrna_file, append = TRUE, ncolumns = 1))
 ```
 
-Run the following Python script to fetch the miRNAs targeting the mRNAs of interest:
-
-```
-python util/get-mirna.py --mrna-list temp/pyroptosis-genes-refseq.txt --output temp/pyroptosis-mirna.txt
-```
-
-Running this script should generate a file named `pyroptosis-mirna.txt` inside the `temp` directory.
-
-Fetch the miRNAs from the said file.
+Fetch the miRNAs targeting the mRNAs of interest.
 
 ```{r}
 pyroptosis.mirna <- read.table("../data/public/miRNA/pyroptosis-mirna.txt")
