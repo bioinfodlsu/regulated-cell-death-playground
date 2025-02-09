@@ -13,7 +13,7 @@ Collection of analysis scripts and notebooks related to regulated cell death
 
 We tested our code in an environment running R 4.4.1 and Bioconductor 3.19.
 
-### Cloning our repository
+### A. Cloning our repository
 
 1. Clone this repository by running:
 
@@ -25,7 +25,7 @@ We tested our code in an environment running R 4.4.1 and Bioconductor 3.19.
    We recommend Windows users to avoid placing the cloned repository inside a deeply nested folder. The reason is that some scripts/notebooks (e.g., for the analysis of data from The Cancer Genome Atlas) require writing and reading files with long filenames. Dealing with Windows' 260-character path length limit can be quite tricky: https://blog.r-project.org/2023/03/07/path-length-limit-on-windows/
 </details>
 
-### Downloading our dataset
+### B. Downloading our dataset
 
 1. Download our dataset from this [link](), and place it at the root of the cloned repository.
 
@@ -50,7 +50,7 @@ We tested our code in an environment running R 4.4.1 and Bioconductor 3.19.
 
 **Note:** If you prefer to run the entire pipeline for generating our dataset (instead of simply downloading it), refer to this [section](https://github.com/bioinfodlsu/regulated-cell-death-playground?tab=readme-ov-file#%EF%B8%8F-running-our-dataset-generation-pipeline).
 
-### Running our analysis scripts and notebooks
+### C. Running our analysis scripts and notebooks
 
 1. Our analysis scripts and notebooks are written in R and found inside the `analysis` folder. Refer to this [page](https://bioinfodlsu.com/regulated-cell-death-playground/) for a description of each script/notebook.
 
