@@ -9,6 +9,8 @@ Collection of analysis scripts and notebooks related to regulated cell death
 
 ## 🧪 Reproducing our results
 
+**Operating system:** Linux, Windows, or macOS
+
 ### Cloning our repository
 
 1. Clone this repository by running:
@@ -16,27 +18,33 @@ Collection of analysis scripts and notebooks related to regulated cell death
    ```
    git clone https://github.com/bioinfodlsu/regulated-cell-death-playground
    ```
+<details>
+   <summary>Click to show/hide note for Windows users</summary> <br>
+   We recommend Windows users to avoid placing the cloned repository inside a deeply nested folder. The reason is that some scripts/notebooks (e.g., for the analysis of data from The Cancer Genome Atlas) require writing and reading files with long filenames. However, dealing with Windows' 260-character path length limit can be quite tricky: https://blog.r-project.org/2023/03/07/path-length-limit-on-windows/
+</details>
 
 ### Downloading our dataset
 
 1. Download our dataset from this [link](), and place it at the root of the cloned repository.
 
-   💡 If you want to verify the integrity of the downloaded dataset, compute the SHA-512 checksum of the downloaded zipped folder using a hashing utility like `certutil` in Windows, `shasum` in Mac, or `sha512sum` in Linux. You should obtain the following checksum:
-
-   ```
-   <checksum>
-   ```
+   <details>
+      <summary>Click to show/hide instructions for verifying the integrity of the downloaded dataset</summary> <br>
+      If you want to verify the integrity of the downloaded dataset, compute the SHA-512 checksum of the downloaded zipped folder using a hashing utility like `certutil` in Windows, `shasum` in Mac, or `sha512sum` in Linux. You should obtain the following checksum: <br> <br>
+      <pre>checksum!</pre>
+   </details>
 
 1. Extract the contents of the downloaded zipped folder. The extraction process should result in a folder named `data`, and inside it should be two folders: `patient` and `public`.
 
-1. Verify that your folder structure is as follows:
-
-   - `regulated-cell-death-playground` (root)
-     - `data`
-       - `patient`
-       - `public`
-     - `analysis`
-     - ...
+   <details>
+      <summary>Click here to show/hide the expected folder structure</summary> <br>
+      
+      - `regulated-cell-death-playground` (root)
+        - `data`
+          - `patient`
+          - `public`
+        - `analysis`
+        - ...
+   </details>
 
 **Note:** If you prefer to run the entire pipeline for generating our dataset (instead of simply downloading it), refer to this [section](https://github.com/bioinfodlsu/regulated-cell-death-playground?tab=readme-ov-file#%EF%B8%8F-running-our-dataset-generation-pipeline).
 
@@ -50,7 +58,7 @@ Collection of analysis scripts and notebooks related to regulated cell death
 
 ## 🖇️ Running our dataset generation pipeline
 
-**Operating System:** Linux or Windows (using [WSL](https://learn.microsoft.com/en-us/windows/wsl/install))
+**Operating system:** Linux or Windows (using [WSL](https://learn.microsoft.com/en-us/windows/wsl/install))
 
 1. Install the package manager Conda. We recommend installing [Miniconda](https://docs.anaconda.com/miniconda/install/).
 1. Install the workflow management system [Snakemake](https://snakemake.readthedocs.io/en/stable/index.html) by running:
