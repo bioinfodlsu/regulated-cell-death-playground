@@ -20,10 +20,11 @@ We tested our code in an environment running R 4.4.1 and Bioconductor 3.19.
    ```
    git clone https://github.com/bioinfodlsu/regulated-cell-death-playground
    ```
-<details>
-   <summary>Click to show/hide note for Windows users</summary> <br>
-   We recommend Windows users to avoid placing the cloned repository inside a deeply nested folder. The reason is that some scripts/notebooks (e.g., for the analysis of data from The Cancer Genome Atlas) require writing and reading files with long filenames. Dealing with Windows' 260-character path length limit can be quite tricky: https://blog.r-project.org/2023/03/07/path-length-limit-on-windows/
-</details>
+   
+   <details>
+      <summary>Click to show/hide note for Windows users</summary> <br>
+      We recommend Windows users to avoid placing the cloned repository inside a deeply nested folder. The reason is that some scripts/notebooks (e.g., for the analysis of data from The Cancer Genome Atlas) require writing and reading files with long filenames. Dealing with Windows' 260-character path length limit can be quite tricky: https://blog.r-project.org/2023/03/07/path-length-limit-on-windows/
+   </details>
 
 ### B. Downloading our dataset
 
