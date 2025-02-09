@@ -11,6 +11,8 @@ Collection of analysis scripts and notebooks related to regulated cell death
 
 **Operating system:** Linux, Windows, or macOS
 
+We tested our code on R 4.4.1 and Bioconductor 3.19.
+
 ### Cloning our repository
 
 1. Clone this repository by running:
@@ -53,8 +55,6 @@ Collection of analysis scripts and notebooks related to regulated cell death
 1. Our analysis scripts and notebooks are written in R and found inside the `analysis` folder. Refer to this [page](https://bioinfodlsu.com/regulated-cell-death-playground/) for a description of each script/notebook.
 
 1. To set up the dependencies, run [`dependencies/install-dependencies.r`](https://github.com/bioinfodlsu/regulated-cell-death-playground/blob/main/dependencies/install-dependencies.r).
-
-**Note:** We tested our code on R 4.4.1 and Bioconductor 3.19.
 
 ## 🖇️ Running our dataset generation pipeline
 
