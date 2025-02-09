@@ -11,7 +11,7 @@ Collection of analysis scripts and notebooks related to regulated cell death
 
 **Operating system:** Linux, Windows, or macOS
 
-We tested our code on an environment running R 4.4.1 and Bioconductor 3.19.
+We tested our code in an environment running R 4.4.1 and Bioconductor 3.19.
 
 ### Cloning our repository
 
