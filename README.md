@@ -11,8 +11,6 @@ Collection of analysis scripts and notebooks related to regulated cell death
 
 **Operating system:** Linux, Windows, or macOS
 
-We tested our code in an environment running R 4.4.1 and Bioconductor 3.19.
-
 ### A. Cloning our repository
 
 1. Clone this repository by running:
@@ -70,6 +68,8 @@ Our analysis scripts and notebooks are written in R and found inside the [`analy
    The dependencies (alongside their specifications) are listed in [`analysis/renv.lock`](https://github.com/bioinfodlsu/regulated-cell-death-playground/blob/main/analysis/renv.lock).
 
 ## 🖇️ Running our dataset generation pipeline
+
+This section is for users who would like to run the pipeline for generating our dataset. If you prefer to simply download our dataset, refer to this [section](https://github.com/bioinfodlsu/regulated-cell-death-playground?tab=readme-ov-file#b-downloading-our-dataset).
 
 **Operating system:** Linux or Windows (using [WSL](https://learn.microsoft.com/en-us/windows/wsl/install))
 
