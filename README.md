@@ -61,7 +61,7 @@ Our analysis scripts and notebooks are written in R and found inside the [`analy
    renv::restore()
    ```
 
-1. Go to the `analysis` folder. Open R and install the necessary dependencies by running:
+1. Open R inside the `analysis` folder, and install the necessary dependencies by running:
 
    ```
    renv::restore()
