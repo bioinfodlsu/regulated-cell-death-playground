@@ -2224,8 +2224,8 @@
     },
     "TCGAbiolinks": {
       "Package": "TCGAbiolinks",
-      "Version": "2.32.0",
-      "Source": "Bioconductor",
+      "Version": "2.35.2",
+      "Source": "GitHub",
       "Type": "Package",
       "Title": "TCGAbiolinks: An R/Bioconductor package for integrative analysis with GDC data",
       "Date": "2024-01-01",
@@ -2313,11 +2313,12 @@
       "BugReports": "https://github.com/BioinformaticsFMRP/TCGAbiolinks/issues",
       "RoxygenNote": "7.3.1",
       "Encoding": "UTF-8",
-      "git_url": "https://git.bioconductor.org/packages/TCGAbiolinks",
-      "git_branch": "RELEASE_3_19",
-      "git_last_commit": "c270a75",
-      "git_last_commit_date": "2024-04-30",
-      "Repository": "Bioconductor 3.19",
+      "RemoteType": "github",
+      "RemoteHost": "api.github.com",
+      "RemoteRepo": "TCGAbiolinks",
+      "RemoteUsername": "BioinformaticsFMRP",
+      "RemoteRef": "devel",
+      "RemoteSha": "b431dc913fd9781bc0be0d62d0c60444009244ad",
       "NeedsCompilation": "no"
     },
     "TCGAbiolinksGUI.data": {
