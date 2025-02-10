@@ -58,7 +58,7 @@ Our analysis scripts and notebooks are written in R and found inside the [`analy
 1. Install the package manager [`renv`](https://rstudio.github.io/renv/articles/renv.html) by opening R and running:
 
    ```
-   renv::restore()
+   install.packages("renv")
    ```
 
 1. Open R inside the `analysis` folder, and install the necessary dependencies by running:
