@@ -67,7 +67,7 @@ Our analysis scripts and notebooks are written in R and found inside the [`analy
    renv::restore()
    ```
 
-   The dependencies (alongside their specifications) are listed in `analysis/renv.lock`.
+   The dependencies (alongside their specifications) are listed in [`analysis/renv.lock`](https://github.com/bioinfodlsu/regulated-cell-death-playground/blob/main/analysis/renv.lock).
 
 ## 🖇️ Running our dataset generation pipeline
 
