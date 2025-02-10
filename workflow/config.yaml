@@ -7,4 +7,16 @@ download_links:
     tpm: "https://storage.googleapis.com/adult-gtex/bulk-gex/v8/rna-seq/GTEx_Analysis_2017-06-05_v8_RNASeQCv1.1.9_gene_tpm.gct.gz"
 
   RCDdb_download_links:
-    gene_lists: ["http://chenyclab.com/RCDdb/download/Necroptosis.csv"]
+    gene_lists:
+      [
+        "http://chenyclab.com/RCDdb/download/Necroptosis.csv",
+        "http://chenyclab.com/RCDdb/download/Ferroptosis.csv",
+        "http://chenyclab.com/RCDdb/download/Pyroptosis.csv",
+        "http://chenyclab.com/RCDdb/download/Apoptosis.csv",
+        "http://chenyclab.com/RCDdb/download/Entotic_cell_death.csv",
+        "http://chenyclab.com/RCDdb/download/Necroptosis.csv",
+        "http://chenyclab.com/RCDdb/download/Alkaliptosis.csv",
+        "http://chenyclab.com/RCDdb/download/NETotic_cell_death.csv",
+        "http://chenyclab.com/RCDdb/download/MPT_driven_necrosis.csv",
+        "http://chenyclab.com/RCDdb/download/Autophagy_dependent_cell_death.csv",
+      ]
