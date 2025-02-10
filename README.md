@@ -53,6 +53,8 @@ Collection of analysis scripts and notebooks related to regulated cell death
 
 Our analysis scripts and notebooks are written in R and found inside the [`analysis`](https://github.com/bioinfodlsu/regulated-cell-death-playground/tree/main/analysis) folder. Refer to this [page](https://bioinfodlsu.com/regulated-cell-death-playground/) for a description of each script/notebook.
 
+The dependencies can be set up following the instructions below:
+
 1. Install the package manager [`renv`](https://rstudio.github.io/renv/articles/renv.html) by opening R and running:
 
    ```
