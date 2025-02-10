@@ -20,7 +20,7 @@ We tested our code in an environment running R 4.4.1 and Bioconductor 3.19.
    ```
    git clone https://github.com/bioinfodlsu/regulated-cell-death-playground
    ```
-   
+
    <details>
       <summary>Click to show/hide note for Windows users</summary> <br>
       We recommend Windows users to avoid placing the cloned repository inside a deeply nested folder. The reason is that some scripts/notebooks (e.g., for the analysis of data from The Cancer Genome Atlas) require writing and reading files with long filenames. Dealing with Windows' 260-character path length limit can be quite tricky: https://blog.r-project.org/2023/03/07/path-length-limit-on-windows/
@@ -53,9 +53,21 @@ We tested our code in an environment running R 4.4.1 and Bioconductor 3.19.
 
 ### C. Running our analysis scripts and notebooks
 
-1. Our analysis scripts and notebooks are written in R and found inside the `analysis` folder. Refer to this [page](https://bioinfodlsu.com/regulated-cell-death-playground/) for a description of each script/notebook.
+Our analysis scripts and notebooks are written in R and found inside the [`analysis`](https://github.com/bioinfodlsu/regulated-cell-death-playground/tree/main/analysis) folder. Refer to this [page](https://bioinfodlsu.com/regulated-cell-death-playground/) for a description of each script/notebook.
 
-1. To set up the dependencies, run [`dependencies/install-dependencies.r`](https://github.com/bioinfodlsu/regulated-cell-death-playground/blob/main/dependencies/install-dependencies.r).
+1. Install the package manager [`renv`](https://rstudio.github.io/renv/articles/renv.html) by opening R and running:
+
+   ```
+   renv::restore()
+   ```
+
+1. Go to the `analysis` folder. Open R and install the necessary dependencies by running:
+
+   ```
+   renv::restore()
+   ```
+
+   The dependencies (alongside their specifications) are listed in `analysis/renv.lock`.
 
 ## 🖇️ Running our dataset generation pipeline
 
