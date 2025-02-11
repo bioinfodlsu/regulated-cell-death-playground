@@ -50,7 +50,7 @@ tx2gene
 
 Convert the transcript-level to gene-level abundance.
 
-```{r}
+```{r, message=FALSE}
 txi <- tximport(files, type = "salmon", tx2gene = tx2gene)
 counts_matrix <- round(txi$counts)
 rownames(counts_matrix) <- cleanid(rownames(counts_matrix))
