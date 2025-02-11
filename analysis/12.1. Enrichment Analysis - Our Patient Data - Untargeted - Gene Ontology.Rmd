@@ -1,0 +1,94 @@
+---
+title: "Enrichment Analysis"
+subtitle: "Our Patient Data | Gene Ontology"
+author: 
+  - Mark Edward M. Gonzales^[De La Salle University, Manila, Philippines, gonzales.markedward@gmail.com]
+  - Dr. Anish M.S. Shrestha^[De La Salle University, Manila, Philippines, anish.shrestha@dlsu.edu.ph]
+output: html_notebook
+---
+
+## I. Preliminaries
+
+### Loading libraries
+
+```{r, warning=FALSE, message=FALSE}
+library("tidyverse")
+library("tibble")
+library("msigdbr")
+library("ggplot2")
+library("dplyr")
+library("grex")
+library("org.Hs.eg.db")
+library("AnnotationDbi")
+library("clusterProfiler")
+```
+
+## II. Gene Ontology Enrichment Analysis
+
+Load the list of differentially expressed genes.
+
+```{r}
+deg <- read.delim("../data/patient/differentially-expressed-genes-untargeted.csv", sep=",")
+rownames(deg) <- deg$X
+deg$X <- NULL
+deg
+```
+
+Perform pathway enrichment analysis.
+
+```{r}
+genes <- rownames(deg)
+enriched <- enrichGO(
+  gene = genes,
+  OrgDb = org.Hs.eg.db,
+  ont = "CC",
+  pAdjustMethod = "BH",
+  keyType = "ENSEMBL",
+  pvalueCutoff = 0.05,
+  readable = TRUE
+)
+
+as.data.frame(enriched)
+```
+
+```{r, fig.width=10,fig.height=10}
+plot(barplot(enriched, showCategory = 20))
+```
+
+```{r}
+genes <- rownames(deg)
+enriched <- enrichGO(
+  gene = genes,
+  OrgDb = org.Hs.eg.db,
+  ont = "BP",
+  pAdjustMethod = "BH",
+  keyType = "ENSEMBL",
+  pvalueCutoff = 0.05,
+  readable = TRUE
+)
+
+as.data.frame(enriched)
+```
+
+```{r, fig.width=10,fig.height=10}
+plot(barplot(enriched, showCategory = 20))
+```
+
+```{r}
+genes <- rownames(deg)
+enriched <- enrichGO(
+  gene = genes,
+  OrgDb = org.Hs.eg.db,
+  ont = "MF",
+  pAdjustMethod = "BH",
+  keyType = "ENSEMBL",
+  pvalueCutoff = 0.05,
+  readable = TRUE
+)
+
+as.data.frame(enriched)
+```
+
+```{r, fig.width=10,fig.height=10}
+plot(barplot(enriched, showCategory = 20))
+```

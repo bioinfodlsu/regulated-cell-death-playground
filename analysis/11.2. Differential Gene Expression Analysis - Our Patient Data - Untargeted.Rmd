@@ -27,6 +27,7 @@ library("matrixStats")
 library("dplyr")
 library("grex")
 library("tximport")
+library("EnhancedVolcano")
 ```
 
 ## II. Converting transcript-level to gene-level abundance
@@ -44,12 +45,13 @@ Load the transcript-to-gene mapping table.
 
 ```{r}
 tx2gene <- read.delim("../data/patient/tx2gene.gencode.v47.tsv", header=FALSE)
+names(tx2gene) <- c("Transcript", "Gene", "Symbol")
 tx2gene
 ```
 
 Convert the transcript-level to gene-level abundance.
 
-```{r}
+```{r, message=FALSE}
 txi <- tximport(files, type = "salmon", tx2gene = tx2gene)
 counts_matrix <- round(txi$counts)
 rownames(counts_matrix) <- cleanid(rownames(counts_matrix))
@@ -79,19 +81,14 @@ meta
 
 ## III. Differential gene expression analysis
 
-### Regulated Cell Death
-
-We obtain the gene sets from RCDdb: https://pmc.ncbi.nlm.nih.gov/articles/PMC11384979/
-
 ```{r}
-RCDdb <- "../data/public/rcd-gene-list/unique-genes/necroptosis-ferroptosis-pyroptosis/"
 projects <- c("patient")
 ```
 
-Write utility functions for filtering the gene sets, performing differential gene expression analysis, and plotting the results.
+Write utility functions for performing differential gene expression analysis and plotting the results.
 
 ```{r}
-filter_gene_set_and_perform_dgea <- function(genes) {
+perform_dgea <- function() {
   rcd <- list()
 
   for (project in projects) {
@@ -118,6 +115,9 @@ filter_gene_set_and_perform_dgea <- function(genes) {
   }
 
   deseq.bbl.data <- list()
+  
+  gene2symbol <- tx2gene[!duplicated(tx2gene$Gene),]
+  rownames(gene2symbol) <- gene2symbol$Gene
 
   for (project in projects) {
     deseq.results <- res_rcd[[project]]
@@ -130,7 +130,7 @@ filter_gene_set_and_perform_dgea <- function(genes) {
       pvalue = deseq.results$pvalue,
       padj = deseq.results$padj,
       cancer_type = project,
-      gene_symbol = genes[rownames(deseq.results), "gene"]
+      gene_symbol = gene2symbol[rownames(deseq.results), "Symbol"]
     )
   }
 
@@ -143,95 +143,22 @@ filter_gene_set_and_perform_dgea <- function(genes) {
 
 ```{r}
 plot_dgea <- function(deseq.bbl.data.combined) {
-  sizes <- c("<10^-15" = 4, "10^-10" = 3, "10^-5" = 2, "0.05" = 1)
-
-  deseq.bbl.data.combined <- deseq.bbl.data.combined %>%
-    mutate(fdr_category = cut(padj,
-      breaks = c(-Inf, 1e-15, 1e-10, 1e-5, 0.05),
-      labels = c("<10^-15", "10^-10", "10^-5", "0.05"),
-      right = FALSE
-    ))
-
-  top_genes <- deseq.bbl.data.combined %>%
-    group_by(cancer_type) %>%
-    mutate(rank = rank(-abs(log2FoldChange))) %>%
-    dplyr::filter(rank <= 10) %>%
-    ungroup()
-
-  ggplot(top_genes, aes(y = cancer_type, x = gene_symbol, size = fdr_category, fill = log2FoldChange)) +
-    geom_point(alpha = 0.5, shape = 21, color = "black") +
-    scale_size_manual(values = sizes) +
-    scale_fill_gradient2(low = "blue", mid = "white", high = "red", limits = c(min(deseq.bbl.data.combined$log2FoldChange), max(deseq.bbl.data.combined$log2FoldChange))) +
-    theme_minimal() +
-    theme(
-      axis.text.x = element_text(size = 9, angle = 90, hjust = 1)
-    ) +
-    theme(legend.position = "bottom") +
-    theme(legend.position = "bottom") +
-    labs(size = "Adjusted p-value", fill = "log2 FC", y = "Cancer type", x = "Gene")
+  EnhancedVolcano(
+    deseq.bbl.data.combined, 
+    x="log2FoldChange", 
+    y="padj", 
+    lab=deseq.bbl.data.combined$gene_symbol,
+  )
 }
 ```
 
-#### 1. Necroptosis
-
-Fetch the gene set of interest.
 
 ```{r}
-genes <- read.csv(paste0(RCDdb, "Necroptosis.csv"))
-genes$gene_id <- cleanid(genes$gene_id)
-genes <- distinct(genes, gene_id, .keep_all = TRUE)
-genes <- subset(genes, gene_id != "")
-genes
-```
-
-```{r}
-deseq.bbl.data.combined <- filter_gene_set_and_perform_dgea(genes)
+deseq.bbl.data.combined <- perform_dgea()
+write.csv(deseq.bbl.data.combined, "../data/patient/differentially-expressed-genes-untargeted.csv")
 deseq.bbl.data.combined
 ```
 
-```{r}
-plot_dgea(deseq.bbl.data.combined)
-```
-
-#### 2. Ferroptosis
-
-Fetch the gene set of interest.
-
-```{r}
-genes <- read.csv(paste0(RCDdb, "Ferroptosis.csv"))
-genes$gene_id <- cleanid(genes$gene_id)
-genes <- distinct(genes, gene_id, .keep_all = TRUE)
-genes <- subset(genes, gene_id != "")
-genes
-```
-
-```{r}
-deseq.bbl.data.combined <- filter_gene_set_and_perform_dgea(genes)
-deseq.bbl.data.combined
-```
-
-```{r}
-plot_dgea(deseq.bbl.data.combined)
-```
-
-
-#### 3. Pyroptosis
-
-Fetch the gene set of interest.
-
-```{r}
-genes <- read.csv(paste0(RCDdb, "Pyroptosis.csv"))
-genes$gene_id <- cleanid(genes$gene_id)
-genes <- distinct(genes, gene_id, .keep_all = TRUE)
-genes <- subset(genes, gene_id != "")
-genes
-```
-
-```{r}
-deseq.bbl.data.combined <- filter_gene_set_and_perform_dgea(genes)
-deseq.bbl.data.combined
-```
-
-```{r}
+```{r, fig.width=10,fig.height=15}
 plot_dgea(deseq.bbl.data.combined)
 ```
