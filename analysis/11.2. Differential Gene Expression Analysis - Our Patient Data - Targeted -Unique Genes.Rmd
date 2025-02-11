@@ -1,6 +1,6 @@
 ---
 title: "Differential Gene Expression Analysis"
-subtitle: "Our Patient Data | Targeted"
+subtitle: "Our Patient Data | Targeted | Unique Genes per RCD Type"
 author: 
   - Mark Edward M. Gonzales^[De La Salle University, Manila, Philippines, gonzales.markedward@gmail.com]
   - Dr. Anish M.S. Shrestha^[De La Salle University, Manila, Philippines, anish.shrestha@dlsu.edu.ph]
@@ -44,6 +44,7 @@ Load the transcript-to-gene mapping table.
 
 ```{r}
 tx2gene <- read.delim("../data/patient/tx2gene.gencode.v47.tsv", header=FALSE)
+names(tx2gene) <- c("Transcript", "Gene", "Symbol")
 tx2gene
 ```
 
@@ -79,92 +80,12 @@ meta
 
 ## III. Differential gene expression analysis
 
-References: 
-
-- Official documentation: https://www.bioconductor.org/packages/release/bioc/vignettes/DESeq2/inst/doc/DESeq2.html
-- Good balance of theory and hands-on: https://hbctraining.github.io/DGE_workshop/lessons/04_DGE_DESeq2_analysis.html
-- Quality control: https://cran.r-project.org/web/packages/RNAseqQC/vignettes/introduction.html
-
-Construct the `DESeqDataSet` object.
-
-```{r}
-dds <- DESeqDataSetFromTximport(
-  txi,
-	colData = meta, 
-	design = ~condition
-)
-```
-
-#### Quality control
-
-Display quality control (QC) plots (refer to https://cran.r-project.org/web/packages/RNAseqQC/vignettes/introduction.html)
-
-- Total sample counts  
-  - Total number of counts for each sample
-  - We typically expect all samples to have total counts within the same order of magnitude
-  
-- Library complexity
-  - What fraction of counts is taken up by what fraction of genes
-  - Samples showing a different library complexity than the rest might be considered low quality
-  
-- Gene detection
-  - Number of detected genes for each sample
-
-```{r}
-plot_total_counts(dds)
-```
-
-```{r}
-plot_library_complexity(dds)
-```
-
-```{r}
-plot_gene_detection(dds)
-```
-
-Perform gene filtering.
-
-```{r}
-dds <- filter_genes(dds)
-```
-
-Transform the read counts.
-
-From https://chipster.csc.fi/manual/deseq2-transform.html: <br>
-You can use the resulting transformed values only for visualization and clustering, not for differential expression analysis which needs raw counts.
-
-```{r}
-vsd <- vst(dds)
-mean_sd_plot(vsd)
-```
-
-Check the clustering of the samples. 
-
-If you encounter the error `Error in loadNamespace(x) : there is no package called 'ComplexHeatmap'`, uncomment and run the following code block:
-
-```{r}
-# install.packages("devtools", dependencies = TRUE)
-# devtools::install_github("jokergoo/ComplexHeatmap")
-```
-
-```{r, fig.width=10,fig.height=15}
-set.seed(42)
-plot_sample_clustering(vsd, anno_vars = c("condition"), distance = "euclidean")
-```
-
-Perform principal component analysis (PCA).
-
-```{r}
-plot_pca(vsd, PC_x = 1, PC_y = 2, shape_by = "condition")
-```
-
-
 ### Regulated Cell Death
 
 We obtain the gene sets from RCDdb: https://pmc.ncbi.nlm.nih.gov/articles/PMC11384979/
 
 ```{r}
-RCDdb <- "../data/public/rcd-gene-list/RCDdb/"
+RCDdb <- "../data/public/rcd-gene-list/unique-genes/necroptosis-ferroptosis-pyroptosis/"
 projects <- c("patient")
 ```
 
