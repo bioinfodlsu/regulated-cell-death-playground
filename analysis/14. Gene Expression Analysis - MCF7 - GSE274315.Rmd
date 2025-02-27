@@ -1,0 +1,171 @@
+---
+title: "Gene Expression Analysis"
+subtitle: "MCF7 Breast Cancer Cell Line | GSE288929 | Necroptosis, Ferroptosis & Pyroptosis"
+author: 
+  - Mark Edward M. Gonzales^[De La Salle University, Manila, Philippines, gonzales.markedward@gmail.com]
+  - Dr. Anish M.S. Shrestha^[De La Salle University, Manila, Philippines, anish.shrestha@dlsu.edu.ph]
+output: html_notebook
+---
+
+## I. Preliminaries
+
+### Loading libraries
+
+```{r, warning=FALSE, message=FALSE}
+library("tidyverse")
+library("tibble")
+library("msigdbr")
+library("ggplot2")
+library("ensembldb")
+library("purrr")
+library("magrittr")
+library("matrixStats")
+library("dplyr")
+library("grex")
+library("gplots")
+library("RColorBrewer")
+```
+
+### Constants
+```{r}
+DATA_DIR <- "../data/public/GEO/MCF7/"
+```
+
+## Loading the Expression Data
+
+The expression data are taken from this study: https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE274315
+
+Download the RNA-seq normalized counts matrices (one matrix per replicate) from:
+- https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSM8447283
+- https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSM8447284
+- https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSM8447285
+
+Each column refers to one replicate.
+
+```{r}
+mcf7.expression1 <- read.delim(paste0(DATA_DIR, "GSM8447283_Control1.txt"), as.is = TRUE, header = TRUE)
+mcf7.expression1 <- mcf7.expression1[c("Gene.symbol", "Control1")] %>% rename("Gene.symbol" = "ID_REF")
+
+mcf7.expression2 <- read.delim(paste0(DATA_DIR, "GSM8447284_Control2.txt"), as.is = TRUE, header = TRUE)
+mcf7.expression2 <- mcf7.expression2[c("Gene.symbol", "Control2")] %>% rename("Gene.symbol" = "ID_REF")
+
+mcf7.expression3 <- read.delim(paste0(DATA_DIR, "GSM8447285_Control3.txt"), as.is = TRUE, header = TRUE)
+mcf7.expression3 <- mcf7.expression3[c("Gene.symbol", "Control3")] %>% rename("Gene.symbol" = "ID_REF")
+mcf7.expression3
+```
+
+Merge the gene expression data for the three replicates into one data frame.
+
+```{r}
+mcf7.expression <- left_join(mcf7.expression1, mcf7.expression2, join_by(ID_REF))
+mcf7.expression <- left_join(mcf7.expression, mcf7.expression3, join_by(ID_REF))
+mcf7.expression <- mcf7.expression %>% rename("Control1" = "Replicate 1", "Control2" = "Replicate 2", "Control3" = "Replicate 3")
+mcf7.expression
+```
+
+## Exploratory Data Analysis
+
+We load the gene sets from RCDdb: https://pubmed.ncbi.nlm.nih.gov/39257527/
+
+```{r}
+RCDdb <- "../data/public/rcd-gene-list/RCDdb/"
+```
+
+### Necroptosis
+
+Load the gene set.
+
+```{r}
+genes <- read.csv(paste0(RCDdb, "Necroptosis.csv"))
+genes$gene_id <- cleanid(genes$gene_id)
+genes <- distinct(genes, gene_id, .keep_all = TRUE)
+genes <- subset(genes, gene_id != "")
+genes
+```
+
+Get the normalized expression data for the genes in the gene set.
+
+```{r}
+tpm.df <- mcf7.expression %>% dplyr::filter(ID_REF %in% genes$gene)
+tpm.df <- distinct(tpm.df, ID_REF, .keep_all = TRUE)
+rownames(tpm.df) <- tpm.df$ID_REF
+tpm.df$ID_REF <- NULL
+tpm.df <- tpm.df[order(rownames(tpm.df)), , drop = FALSE]
+tpm.df
+```
+
+Plot the results.
+
+```{r, fig.height=30, fig.width=10}
+tpm.matrix <- as.matrix(tpm.df)
+heatmap.2(tpm.matrix, srtCol=360, cellnote = tpm.matrix, dendrogram="none", Colv=FALSE, Rowv=FALSE,
+          col=brewer.pal(n = 9, name = "BuPu")[5:9], trace="none", key = FALSE, lwid=c(0.1,4), lhei=c(0.1,4),
+          cexCol=1, cexRow=0.75, symm = TRUE)
+```
+### Ferroptosis
+
+Load the gene set.
+
+```{r}
+genes <- read.csv(paste0(RCDdb, "Ferroptosis.csv"))
+genes$gene_id <- cleanid(genes$gene_id)
+genes <- distinct(genes, gene_id, .keep_all = TRUE)
+genes <- subset(genes, gene_id != "")
+genes
+```
+
+Get the normalized expression data for the genes in the gene set.
+
+```{r}
+tpm.df <- mcf7.expression %>% dplyr::filter(ID_REF %in% genes$gene)
+tpm.df <- distinct(tpm.df, ID_REF, .keep_all = TRUE)
+rownames(tpm.df) <- tpm.df$ID_REF
+tpm.df$ID_REF <- NULL
+tpm.df <- tpm.df[order(rownames(tpm.df)), , drop = FALSE]
+tpm.df
+```
+
+Plot the results.
+
+**NOTE: `VALUE` and `VALUE1` are the same. This is just a workaround since R's `heatmap.2` requires the heatmap to have at least two columns.**
+
+```{r, fig.height=150, fig.width=10}
+tpm.matrix <- as.matrix(tpm.df)
+heatmap.2(tpm.matrix, srtCol=360, cellnote = tpm.matrix, dendrogram="none", Colv=FALSE, Rowv=FALSE,
+          col=brewer.pal(n = 9, name = "BuPu")[5:9], trace="none", key = FALSE, lwid=c(0.1,4), lhei=c(0.1,4),
+          cexCol=1, cexRow=0.75, symm = TRUE)
+```
+
+### Pyroptosis
+
+Load the gene set.
+
+```{r}
+genes <- read.csv(paste0(RCDdb, "Pyroptosis.csv"))
+genes$gene_id <- cleanid(genes$gene_id)
+genes <- distinct(genes, gene_id, .keep_all = TRUE)
+genes <- subset(genes, gene_id != "")
+genes
+```
+
+Get the normalized expression data for the genes in the gene set.
+
+```{r}
+tpm.df <- mcf7.expression %>% dplyr::filter(ID_REF %in% genes$gene)
+tpm.df <- distinct(tpm.df, ID_REF, .keep_all = TRUE)
+rownames(tpm.df) <- tpm.df$ID_REF
+tpm.df$ID_REF <- NULL
+tpm.df <- tpm.df[order(rownames(tpm.df)), , drop = FALSE]
+tpm.df
+```
+
+Plot the results.
+
+**NOTE: `VALUE` and `VALUE1` are the same. This is just a workaround since R's `heatmap.2` requires the heatmap to have at least two columns.**
+
+```{r, fig.height=20, fig.width=10}
+tpm.matrix <- as.matrix(tpm.df)
+heatmap.2(tpm.matrix, srtCol=360, cellnote = tpm.matrix, dendrogram="none", Colv=FALSE, Rowv=FALSE,
+          col=brewer.pal(n = 9, name = "BuPu")[5:9], trace="none", key = FALSE, lwid=c(0.1,4), lhei=c(0.1,4),
+          cexCol=1, cexRow=0.75, symm = TRUE)
+```
